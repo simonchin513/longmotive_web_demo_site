@@ -1,0 +1,314 @@
+/* Mobile-only section snapping.
+   `min-height` keeps short sections screen-sized, while tall forms, galleries
+   and project lists grow normally and remain readable in the document flow. */
+@media (max-width: 760px) {
+  :root {
+    --mobile-header-height: 74px;
+  }
+
+  html {
+    /* Proximity keeps the section guidance but never traps a long page before
+       its final card, map or footer. */
+    scroll-snap-type: y proximity;
+    /* Snap destinations begin below the fixed navigation instead of behind it. */
+    scroll-padding-top: var(--mobile-header-height);
+    overflow-x: clip;
+  }
+
+  body {
+    overflow-x: clip;
+  }
+
+  /* Each visible SPA page is wrapped by one direct child of <main>. */
+  main > div > section {
+    min-height: 100svh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    scroll-margin-top: var(--mobile-header-height);
+    overflow-x: clip;
+  }
+
+  /* Use the dynamic viewport where the browser supports it. */
+  @supports (min-height: 100dvh) {
+    main > div > section {
+      min-height: 100dvh;
+    }
+  }
+
+  /* The Home opening sequence deliberately has a longer scroll track to
+     scrub its media. It remains one snap destination without clipping it. */
+  main > div > section.lm-scroll-stop[ref] {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* Mobile keeps the Home hero as a single static scene. The desktop-only
+     500vh media scrub would otherwise consume five phone screens. */
+  main > div > section.lm-home-hero {
+    height: 100svh !important;
+    min-height: 100svh;
+  }
+
+  img,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  @supports (height: 100dvh) {
+    main > div > section.lm-home-hero {
+      height: 100dvh !important;
+      min-height: 100dvh;
+    }
+  }
+
+  /* A six-card service list fits cleanly as three compact rows.  This rule is
+     deliberately scoped to the Home page so desktop and the other grids keep
+     their original proportions. */
+  .lm-home-services .lm-g3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .lm-home-services .lm-g3 > div {
+    padding: 14px !important;
+  }
+
+  .lm-home-services {
+    min-height: calc(100svh + 32px) !important;
+    margin-bottom: 28px;
+  }
+
+  /* The decorative video tints the service surface on phones. Remove that
+     tint so the breathing room before statistics is the exact same white. */
+  .lm-home-services video {
+    display: none;
+  }
+
+  /* Keep the four proof points compact on a phone; the desktop one-row layout
+     otherwise collapses into a tall, mostly empty blue block. */
+  .lm-home-stats {
+    margin-top: -70px !important;
+    margin-bottom: 24px !important;
+    padding-top: 24px !important;
+    padding-bottom: 24px !important;
+  }
+
+  .lm-home-stats .lm-g4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+  }
+
+  /* This is a short call-to-action, not a content page. Keeping it at a full
+     viewport left an oversized empty blue area below the button. */
+  main > div > section[data-home-cta="true"] {
+    min-height: 0;
+  }
+
+  [data-home-cta="true"] > div {
+    padding-top: 52px !important;
+    padding-bottom: 52px !important;
+  }
+
+  /* Contact keeps the production design, which has no class hooks, so its
+     short header is matched by its own inline style -- in both spellings,
+     because React re-serialises the attribute with spaces. Without this it is
+     stretched to a full screen with ~150px of empty gradient under the copy. */
+  main > div > section[style*="padding:76px var(--gutter) 64px"],
+  main > div > section[style*="padding: 76px var(--gutter) 64px"] {
+    min-height: 0;
+  }
+
+  /* The Projects heading and interactive globe are compact modules. They do
+     not need an empty full-screen tail after their content on a phone. */
+  main > div > section.lm-projects-overview {
+    min-height: 0;
+  }
+
+  .lm-projects-hero {
+    padding-top: 38px !important;
+    padding-bottom: 34px !important;
+  }
+
+  .lm-projects-globe-section {
+    padding-top: 10px !important;
+    padding-bottom: 56px !important;
+  }
+
+  .lm-projects-list-section {
+    border-top: 1px solid rgba(137, 190, 225, .28);
+    padding-top: 56px !important;
+    scroll-snap-align: none !important;
+    scroll-snap-stop: normal !important;
+  }
+
+  .lm-projects-filter-bar {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .lm-projects-list-grid {
+    display: block !important;
+  }
+
+  .lm-project-pair {
+    box-sizing: border-box;
+    display: grid !important;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    height: calc(100svh - var(--mobile-header-height));
+    padding: 12px 0;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .lm-project-pair .lm-pcard {
+    display: grid !important;
+    grid-template-rows: 62% 38%;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .lm-project-pair .lm-pcard > div:first-child {
+    min-height: 0;
+    aspect-ratio: auto !important;
+  }
+
+  .lm-project-pair .lm-pcard > div:last-child {
+    min-height: 0;
+    overflow: hidden;
+    justify-content: center;
+    padding: 12px 15px 14px !important;
+    gap: 5px !important;
+  }
+
+  .lm-project-pair .lm-pcard > div:last-child > span {
+    font-size: 11px !important;
+    letter-spacing: .13em !important;
+  }
+
+  .lm-project-pair .lm-pcard h3 {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 19px !important;
+    line-height: 1.18;
+  }
+
+  .lm-project-pair .lm-pcard p {
+    overflow: hidden;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Projects is a long portfolio journey on mobile. Keep its hero, globe and
+     cards in one continuous page so a swipe never skips over project content. */
+  main > .lm-projects-page > section {
+    scroll-snap-align: start !important;
+    scroll-snap-stop: always !important;
+  }
+
+  /* The About gallery and philosophy previously shared one fixed-height
+     section. On a phone they are separate snap screens, so neither is
+     squeezed or clipped. */
+  main > div > section.lm-about-story {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    scroll-snap-align: none;
+    scroll-snap-stop: normal;
+  }
+
+  .lm-about-story > div:first-child {
+    display: none;
+  }
+
+  .lm-about-story > div:nth-child(2) {
+    display: contents !important;
+  }
+
+  .about-gallery-screen,
+  .about-philosophy-screen {
+    box-sizing: border-box;
+    min-height: 100svh;
+    padding: 36px var(--gutter);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .about-gallery-screen {
+    grid-template-columns: 1fr !important;
+    align-content: center;
+    gap: 18px !important;
+  }
+
+  .about-philosophy-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .about-philosophy-screen .lm-g4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    margin-top: 22px !important;
+  }
+
+  .about-philosophy-screen .lm-g4 > div {
+    padding: 14px !important;
+  }
+
+  .about-principles-section {
+    display: flex;
+    align-items: center;
+  }
+
+  .about-principles-section > div {
+    gap: 28px !important;
+  }
+
+  .about-certs-section {
+    min-height: 0 !important;
+    scroll-snap-align: none !important;
+    scroll-snap-stop: normal !important;
+    padding-top: 56px !important;
+  }
+
+  .about-certs-section > div > div:first-child {
+    min-height: 52svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .about-certs-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+  }
+
+  .about-cert-card {
+    min-height: 190px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  @supports (min-height: 100dvh) {
+    .about-gallery-screen,
+    .about-philosophy-screen {
+      min-height: 100dvh;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-snap-type: y proximity;
+  }
+}
