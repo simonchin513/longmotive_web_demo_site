@@ -307,6 +307,93 @@
   }
 }
 
+/* Services spec line: exists only for the phone layout below. The desktop
+   card already carries the full description and must not gain a second one. */
+.lm-svc-short {
+  display: none;
+}
+
+/* Phone refinements on top of the section layout. Every selector carries a
+   section hook (.lm-home-hero, .lm-home-services, .lm-home-stats) because this
+   file loads BEFORE the page's own <style>, whose phone hero rules are also
+   !important -- on a specificity tie the page would win. */
+@media (max-width: 760px) {
+  /* Type floor: nothing under 12px. The kickers and labels carry their size
+     inline, and an !important rule outranks a plain inline declaration.
+     Both spellings, because React writes style attributes back with spaces. */
+  .lm-work-kicker { font-size: 13px !important; }
+  .lm-rail-state span, .lm-rail-index, .lm-rail-discipline, .lm-work-pause { font-size: 12px !important; }
+  .lm-rail-meta { font-size: 14px !important; }
+  [style*="font-size:9px"], [style*="font-size: 9px"] { font-size: 12px !important; }
+  [style*="font-size:10px"], [style*="font-size: 10px"] { font-size: 12px !important; }
+  [style*="font-size:clamp(11px"], [style*="font-size: clamp(11px"] { font-size: 13px !important; }
+  [style*="font-size:11px"], [style*="font-size: 11px"] { font-size: 13px !important; }
+  [style*="font-size:13px"], [style*="font-size: 13px"] { font-size: 14px !important; }
+  .lm-project-pair .lm-pcard > div:last-child > span { font-size: 12px !important; }
+
+  /* Services: icon, title and a spec line, no card chrome, so all six fit one
+     screen. The bordered box is what made two columns feel cramped. */
+  .lm-home-services .lm-g3 { gap: 24px 18px !important; }
+  .lm-home-services .lm-g3 > div {
+    padding: 0 !important;
+    background: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+  .lm-home-services .lm-g3 > div > p { display: none; }
+  /* :first-child, or this also seizes the spec span after the title. */
+  .lm-home-services .lm-g3 > div > span:first-child {
+    width: 34px !important;
+    height: 34px !important;
+    margin: 0 0 10px !important;
+  }
+  .lm-home-services .lm-g3 > div > h3 {
+    font-size: 14px !important;
+    line-height: 1.35;
+    margin: 0 !important;
+  }
+  .lm-home-services .lm-g3 > div > .lm-svc-short {
+    display: block;
+    margin-top: 5px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: .01em;
+    color: var(--text-muted);
+  }
+
+  /* Stats: number over label on every tile. As baseline rows that wrap, the
+     four came out three different heights at this width. */
+  .lm-home-stats .lm-g4 > div {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 5px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  /* Hero: the stage is inline 100vh, which on iOS is the LARGE viewport, so
+     inside a 100svh section it overhangs the bottom. Match the section. */
+  .lm-home-hero .lm-hero-stage {
+    height: 100% !important;
+    --band-top: 74px !important;
+    --band-h: min(76vw, 33svh) !important;
+  }
+  /* The band used to start at 5vh -- 33px on a 664px screen -- under a 73px
+     header: 40 of its 219px were hidden. Now it starts below the header. */
+  .lm-home-hero .lm-hero-copy {
+    padding-top: calc(var(--band-top) + var(--band-h) + 46px) !important;
+  }
+  .lm-home-hero .lm-hero-meter { gap: 6px !important; }
+  .lm-home-hero .lm-hero-meter > div:first-child {
+    font-size: 10px !important;
+    letter-spacing: .07em !important;
+    gap: 12px;
+  }
+  .lm-home-hero .lm-hero-meter > div:first-child > span:last-child { text-align: right; }
+  .lm-home-hero .lm-hero-meter > div:nth-child(2) { height: 2px !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-snap-type: y proximity;

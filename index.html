@@ -459,6 +459,7 @@
               <div data-reveal="{{ $index }}" style="background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:clamp(14px,2.2vh,26px);box-shadow:var(--shadow-xs);transition:box-shadow .25s,transform .25s,border-color .25s" style-hover="box-shadow:var(--shadow-lg);transform:translateY(-3px);border-color:var(--border-default)">
                 <span style="width:clamp(34px,5vh,46px);height:clamp(34px,5vh,46px);border-radius:var(--radius-sm);background:var(--lm-blue-50);color:var(--color-brand);display:inline-flex;align-items:center;justify-content:center;margin-bottom:clamp(8px,1.4vh,14px)">{{ s.iconEl }}</span>
                 <h3 style="margin:0 0 4px;font-size:clamp(17px,2.5vh,21px);color:var(--text-strong)">{{ s.title }}</h3>
+                <span class="lm-svc-short">{{ s.short }}</span>
                 <p style="margin:0;font-size:clamp(13px,1.8vh,15px);color:var(--text-muted);line-height:1.5">{{ s.desc }}</p>
               </div>
             </sc-for>
@@ -881,12 +882,12 @@ const ICONS={
 };
 
 const SERVICES=[
-  {icon:'Wind',title:'HVAC & Chilled Water',desc:'Central plant rooms, cooling towers, AHUs and chilled-water reticulation for high-density data centers.'},
-  {icon:'Zap',title:'Electrical & Power',desc:'MV/LV distribution, busway, generators, UPS and switchgear installation and commissioning.'},
-  {icon:'Flame',title:'Fire Protection',desc:'Sprinkler, gaseous suppression and fire-fighting pump systems to international standards.'},
-  {icon:'Droplet',title:'Plumbing & Drainage',desc:'Domestic water, drainage, and process piping fabricated and installed to spec.'},
-  {icon:'Cpu',title:'BIM Coordination',desc:'Full 3D MEP modelling, clash detection and prefabrication drawings before a pipe is cut.'},
-  {icon:'Wrench',title:'Prefabrication',desc:'Automated pipe-spool cutting, beveling and welding in our controlled fabrication yard.'}
+  {icon:'Wind',title:'HVAC & Chilled Water',short:'Plant rooms · Cooling towers · AHUs',desc:'Central plant rooms, cooling towers, AHUs and chilled-water reticulation for high-density data centers.'},
+  {icon:'Zap',title:'Electrical & Power',short:'MV/LV · Busway · Gensets · UPS',desc:'MV/LV distribution, busway, generators, UPS and switchgear installation and commissioning.'},
+  {icon:'Flame',title:'Fire Protection',short:'Sprinkler · Gas suppression · Pumps',desc:'Sprinkler, gaseous suppression and fire-fighting pump systems to international standards.'},
+  {icon:'Droplet',title:'Plumbing & Drainage',short:'Domestic water · Drainage · Process',desc:'Domestic water, drainage, and process piping fabricated and installed to spec.'},
+  {icon:'Cpu',title:'BIM Coordination',short:'3D MEP · Clash detection · Spools',desc:'Full 3D MEP modelling, clash detection and prefabrication drawings before a pipe is cut.'},
+  {icon:'Wrench',title:'Prefabrication',short:'Cutting · Beveling · Welding',desc:'Automated pipe-spool cutting, beveling and welding in our controlled fabrication yard.'}
 ];
 const STATS=[
   {value:'20',suffix:'+',label:'Years Experience'},
