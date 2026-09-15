@@ -2277,10 +2277,32 @@ class Component extends DCLogic {
     this._auto=!mobileSectionLayout;
     // Mobile keeps the hero to one screen, but still plays the concise logo
     // intro. Unlike desktop, it does not auto-scroll away after the animation.
-    if(mobileSectionLayout) setTimeout(()=>{
-      const screen=this.state.screen||this.props.startScreen||'Home';
-      if(screen==='Home') this._playMobileHeroIntro();
-    },450);
+    // WAIT FOR THE VIDEO, NOT FOR 450ms. The intro used to start on a fixed
+    // timer after mount, and it is a five-second timer of its own -- so on a
+    // phone network the whole construction sequence ran out behind the
+    // 'Preparing' gate while the clip was still downloading, and the visitor
+    // saw the gate, then the logo, then the headline: never the hero. Measured
+    // at ~10 Mbps: readyState 0 at 3s with the copy already faded, the video
+    // at its last frame by 8s under the logo. Start on the same condition the
+    // desktop tour uses -- gate gone and the element able to play -- plus a
+    // beat for the gate's fade. If the visitor has already swiped on, or the
+    // clip never arrives, nothing plays and the headline simply stays.
+    if(mobileSectionLayout){
+      const armedAt=performance.now();
+      const arm=()=>{
+        const screen=this.state.screen||this.props.startScreen||'Home';
+        if(screen!=='Home'||this._logoSeq) return;
+        const v=this._video;
+        if((this._loadGone||!this._load)&&v&&v.readyState>=3){
+          setTimeout(()=>{
+            if(!this._logoSeq&&window.scrollY<=window.innerHeight*0.5) this._playMobileHeroIntro();
+          },650);
+          return;
+        }
+        if(performance.now()-armedAt<90000) setTimeout(arm,200);
+      };
+      setTimeout(arm,450);
+    }
     // WAIT FOR THE FRAMES, NOT FOR TWO SECONDS. The gate lifts at tier 1 -- 34 of
     // 271 frames -- which is enough for a person scrolling by hand, because they
     // move slowly and the nearest-loaded frame covers the gaps. It is NOT enough
