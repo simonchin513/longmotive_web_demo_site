@@ -1814,7 +1814,7 @@ class Component extends DCLogic {
       this._unlockScroll();
       this.setState({navRevealed:true},()=>{
         this._applyNav();
-        setTimeout(()=>{ this.setState({logoStage:3},()=>{ this._applyNav(); if(this._brand) this._brand.style.opacity='1'; }); },650);
+        setTimeout(()=>{ this.setState({logoStage:3},()=>{ this._applyNav(); if(this._brand) this._brand.style.opacity='1'; if(typeof matchMedia!=='undefined'&&matchMedia('(max-width:760px)').matches) this._returnMobileHero(); }); },650);
       });
     };
     const ready=()=>{
@@ -2169,6 +2169,28 @@ class Component extends DCLogic {
       else this._startLogoSeq();
     };
     this._mobileHeroRaf=requestAnimationFrame(step);
+  };
+  // PHONE: THE INTRO ENDS ON THE HEADLINE. The intro above runs the hero to
+  // .835 and hands over to the logo, and nothing ever set it back -- so after
+  // five seconds the page sat on the phase-05 caption for good, with the
+  // headline and VIEW PROJECTS faded out until somebody happened to scroll.
+  // Once the logo has landed in the header, return to the opening state.
+  // It returns to progress 0 rather than holding the finished campus, because
+  // 0 is what any scroll on this one-screen hero computes anyway: holding the
+  // last frame would only last until the first touch and then jump.
+  // The frame is set directly instead of through the seek lerp, which would
+  // otherwise play the construction backwards under the fading photo.
+  _returnMobileHero=()=>{
+    const screen=this.state.screen||this.props.startScreen||'Home';
+    if(screen!=='Home') return;
+    const v=this._video;
+    const layers=[this._copy,this._photo,this._scrim,this._scrimBottom,this._tint,this._bar,v].filter(Boolean);
+    const prev=layers.map(el=>el.style.transition);
+    layers.forEach(el=>{ el.style.transition='opacity .7s ease, transform .7s ease, filter .7s ease'; });
+    this._target=0; this._cur=0;
+    if(v&&v.readyState>=1){ try{ v.currentTime=0; }catch(e){} }
+    this._heroUpdate(0);
+    setTimeout(()=>{ layers.forEach((el,k)=>{ el.style.transition=prev[k]; }); },800);
   };
   componentDidMount(){
     // EVERY REFRESH IS A NEW VISIT. Browsers restore the scroll position on
