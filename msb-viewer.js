@@ -140,6 +140,11 @@ class LMMsbViewer extends HTMLElement{
       const fit=(sz.x/2)/Math.tan(camera.fov*Math.PI/360)/Math.max(1,camera.aspect)+sz.z;
       VIEWS.overview.t.set(c.x,c.y,c.z);VIEWS.overview.r=Math.max(fit*1.12,sz.x*.8);
       VIEWS.front.t.set(c.x,c.y,c.z);
+      // SIGNATURE VIEW = THE PHOTOGRAPH'S STANDPOINT: from one end of the lineup,
+      // looking down it, rather than square on to a single cubicle. The rig still
+      // only slides along the row, so the heading is fixed here and nowhere else.
+      VIEWS.front.r=Math.max(sz.x*MSB_R,1.8);VIEWS.front.th=MSB_TH;VIEWS.front.ph=MSB_PH;
+      RF_MAX=VIEWS.front.r; // zoom-out still stops at the signature framing
       panX0=bb.min.x+.7;panX1=bb.max.x-.7;
       sun.target.position.copy(c);
       sun.shadow.camera.left=-sz.x*.7;sun.shadow.camera.right=sz.x*.7;
@@ -172,6 +177,9 @@ class LMMsbViewer extends HTMLElement{
     },(err)=>this._fallback(err));
 
     /* ---------------- camera rig: clamped to the FRONT of the single row ---------------- */
+    // Tuned against the card photograph: distance as a fraction of the row's
+    // width, then its heading and tilt.
+    const MSB_R=1.05,MSB_TH=1.15,MSB_PH=1.42;
     const C={x:3.4,y:1.1,z:.5};
     const VIEWS={
       overview:{t:new THREE.Vector3(C.x,C.y,C.z),r:7.4,th:0,ph:1.35},
