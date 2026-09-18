@@ -256,6 +256,53 @@
     text-transform:uppercase;color:#3F5A70;background:#081F36;padding-right:8px}
 
   /* preview card: 256 wide, image then caption, square corners like the rest */
+  /* THE CORNER FILM. Right-pinned so it can never reach .tl-nodes, which owns
+     left 76px..376px. Width is capped rather than fluid: past ~420px it starts
+     to read as the subject of the panel instead of an aside to the chronology.
+     Below 900px of stage there is no room for both, and the chronology is the
+     thing that must survive -- so the film is removed from the layout entirely
+     rather than shrunk into a stamp. */
+  /* Width is a clamp, not a single cap: at 34vw alone a 1000px stage gave the
+     film 340px and a 760px stage gave it 258px, which is still usable, but the
+     old hard `display:none` below 900px threw all of that away. The floor is
+     240px because below that the title line wraps to three rows. */
+  #tl .tl-corner{position:absolute;right:40px;top:56px;
+    width:clamp(240px,32vw,420px);
+    pointer-events:auto;opacity:0;transition:opacity .45s ease;display:none}
+  #tl.on .tl-corner.live{display:block;opacity:1}
+  #tl .tl-corner .tl-cwrap{position:relative;display:block;width:100%;
+    aspect-ratio:16/9;overflow:hidden;border:1px solid #1E3E55;
+    border-radius:3px 3px 0 0;background:#02080f;cursor:zoom-in}
+  #tl .tl-corner video{display:block;width:100%;height:100%;object-fit:cover}
+  #tl .tl-corner .tl-cgrad{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(4,18,31,0) 46%,rgba(4,18,31,.82) 100%)}
+  #tl .tl-corner .tl-ctitle{position:absolute;left:10px;right:10px;bottom:8px;
+    font:600 11px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.10em;
+    text-transform:uppercase;color:#E4ECF3;pointer-events:none}
+  /* The note needs its own ground. Set loose on the globe it landed across the
+     coastlines and straight through the HONG KONG label -- legible nowhere.
+     Same panel treatment as .tl-prev so it reads as part of the same card
+     rather than as floating type. */
+  #tl .tl-corner .tl-cnote{margin:0;padding:8px 10px 9px;
+    font:400 10.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.04em;color:#8FB6CE;
+    background:rgba(4,18,31,.88);
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    border:1px solid #1E3E55;border-top:0;
+    border-radius:0 0 3px 3px}
+  #tl .tl-corner .tl-chint{position:absolute;right:9px;top:9px;
+    font:600 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;
+    text-transform:uppercase;color:#9FD8F5;background:rgba(4,18,31,.72);
+    border:1px solid rgba(83,206,250,.34);border-radius:2px;padding:4px 6px;
+    opacity:0;transition:opacity .2s ease;pointer-events:none}
+  #tl .tl-corner .tl-cwrap:hover .tl-chint{opacity:1}
+  /* 700px, derived rather than picked: the chronology ends at 376px, then a
+     24px gap, the corner's 240px floor and its 40px right margin — 680px is
+     the width at which the two genuinely stop fitting. The first guess was
+     900px, and it hid the film on any stage narrower than that while the clip
+     went on playing behind display:none. A viewer cannot tell "hidden" from
+     "broken", which is exactly how it was reported. */
+  @media(max-width:700px){ #tl .tl-corner{display:none!important} }
   #tl .tl-prev{position:absolute;width:256px;border:1px solid #1E3E55;
     background:rgba(8,24,38,.9);pointer-events:none;opacity:0;
     transform:scale(.96);transform-origin:left center;
@@ -288,10 +335,6 @@
   /* The film button sits with the campus switch because a film belongs to a
      campus, not to a visit -- and a pack with no film simply has no button,
      which is why there is never an empty slot to explain. */
-  #tl .tl-parks button.tl-film-btn{margin-left:7px;border-color:rgba(83,206,250,.34);
-    color:#8FB6CE}
-  #tl .tl-parks button.tl-film-btn[aria-pressed="true"]{background:#53CEFA;
-    border-color:#53CEFA;color:#04121F}
   #tl .tl-cap{padding:11px 13px 12px;border-top:1px solid #1E3E55}
   #tl .tl-cap b{display:block;font:600 11px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;
     letter-spacing:.12em;text-transform:uppercase;color:#E4ECF3;margin-bottom:5px}
@@ -445,6 +488,12 @@
       <div class="tl-axis"></div>
       <div class="tl-head"><span class="tl-parks" id="tlParks" role="group" aria-label="Campus"></span><span id="tlCount"></span></div>
       <div class="tl-nodes" id="tlNodes" role="listbox" aria-label="Capture visits" tabindex="0"></div>
+      <!-- The campus film, in the corner the chronology does not reach.
+           It replaces the old "Film" button: a control the visitor had to find
+           and press, for the one thing on this panel that can simply be
+           playing. .tl-nodes owns left 76..376, so this is pinned right and
+           never covers a date. Click it to open the big draggable card. -->
+      <div class="tl-corner" id="tlFilm" aria-hidden="true"></div>
       <div class="tl-prev" id="tlPrev"></div>
     </div>
     <div id="rail">NUSAJAYA · BATAM · BANGKOK · HONG KONG</div>
@@ -1324,12 +1373,21 @@ const TL=(()=>{
      one at a time; interleaving them by date would describe one construction
      project where there are two. */
   const PACKS=[
-    {id:'ktp', label:'KTP', base:'uploads/ktp/', manifest:'data/ktp-progression.json'},
+    {id:'ktp', label:'KTP', base:'uploads/ktp/', manifest:'data/ktp-progression.json',
+     /* KTP's campus move is a camera push over the DAY ONE block, animated from
+        the 2026-07-04 oblique survey frame rather than flown -- there is no
+        continuous KTP flight in the library the way there is for NTP. The note
+        therefore says what the picture shows and does not describe a sortie.
+        Same key shape as NTP: the Film button is generated purely from the
+        presence of this object, so adding it is the whole change. */
+     film:{src:'uploads/ktp-aerial/ktp-film.mp4',
+           poster:'uploads/ktp-aerial/ktp-film-poster.jpg',
+           title:'Over the DAY ONE block',
+           note:'The finished plant at Kempas Tech Park, seen from the south. '
+               +'Enlarge it to watch.'}},
     {id:'ntp', label:'NTP', base:'uploads/ntp/', manifest:'data/ntp-progression.json',
      /* The only finished-campus flight in the library: 39.1s of oblique orbit
-        shot 17 Dec 2025, first 24s taken at 2x. KTP has no equivalent, so KTP
-        has no film key and therefore no button -- an absent capability shows as
-        an absent control, not as a disabled one. The path is NOT declared in a
+        shot 17 Dec 2025, first 24s taken at 2x. The path is NOT declared in a
         progression manifest; it is a campus asset, not a visit's media. */
      film:{src:'uploads/hero-real/campus-arc.mp4',
            poster:'uploads/hero-real/campus-arc-poster.jpg',
@@ -1344,6 +1402,7 @@ const TL=(()=>{
   const elPrev=document.getElementById('tlPrev');
   const elCount=document.getElementById('tlCount');
   const elParks=document.getElementById('tlParks');
+  const elFilm=document.getElementById('tlFilm');
   const lead=root.querySelector('.tl-lead');
   const halo=root.querySelector('.tl-halo');
   const reduce=matchMedia('(prefers-reduced-motion: reduce)');
@@ -1375,17 +1434,67 @@ const TL=(()=>{
       elParks.querySelectorAll('button').forEach(b=>b.addEventListener('click',(e)=>{
         e.stopPropagation(); selectPack(b.dataset.p); }));
     }
-    let fb=elParks.querySelector('.tl-film-btn');
-    if(pack.film && !fb){
-      fb=document.createElement('button');
-      fb.type='button'; fb.className='tl-film-btn'; fb.textContent='Film';
-      fb.addEventListener('click',(e)=>{ e.stopPropagation(); showFilm(); });
-      elParks.appendChild(fb);
-    }else if(!pack.film && fb){ fb.remove(); }
-    elParks.querySelectorAll('button:not(.tl-film-btn)').forEach(b=>
+    elParks.querySelectorAll('button').forEach(b=>
       b.setAttribute('aria-pressed', String(b.dataset.p===pack.id)));
-    if(fb) fb.setAttribute('aria-pressed', String(filmOn));
   }
+
+  /* THE CORNER FILM replaces the old Film button.
+     A button made the visitor discover and press a control for the one thing on
+     this panel that can just be playing, and it competed with KTP/NTP in the
+     same strip as though "Film" were a third campus. Now selecting a campus
+     starts its film in the corner, and the strip holds only campuses again.
+     Clicking the corner still opens the big draggable card -- showFilm() and
+     wireFilm() are untouched, so nothing that could be done before is lost. */
+  let cornerVid=null;
+  function paintFilm(){
+    const f=pack.film;
+    if(!f){
+      if(cornerVid){ try{ cornerVid.pause(); }catch(_){}
+        cornerVid.removeAttribute('src'); try{ cornerVid.load(); }catch(_){} }
+      cornerVid=null;
+      elFilm.className='tl-corner'; elFilm.innerHTML=''; elFilm.setAttribute('aria-hidden','true');
+      return;
+    }
+    // Rebuild only on a change of film; re-rendering identical markup would
+    // restart the clip every time the panel repaints, which it does on hover.
+    if(elFilm.dataset.src===f.src){ return; }
+    elFilm.dataset.src=f.src;
+    /* src AND autoplay in the markup, never `el.src=…` followed by `el.play()`.
+       Measured: the assign-then-play form stalls at readyState 1 -- metadata
+       arrives, the browser fires `suspend`, and `canplay` never comes, so the
+       poster sits there looking like a still. A bare <video> outside this panel
+       stalls exactly the same way, so it is the shape of the call and not the
+       globe. The autoplay attribute makes the browser commit to buffering,
+       which is also why the About gallery loops and the home aerial band work. */
+    elFilm.innerHTML=
+      '<span class="tl-cwrap">'
+      +'<video src="'+f.src+'" poster="'+f.poster+'"'
+      +' autoplay muted loop playsinline preload="auto"></video>'
+      +'<span class="tl-cgrad"></span>'
+      +'<span class="tl-ctitle">'+f.title+'</span>'
+      +'<span class="tl-chint">Enlarge</span>'
+      +'</span>'
+      +'<p class="tl-cnote">'+f.note+'</p>';
+    elFilm.className='tl-corner live';
+    elFilm.setAttribute('aria-hidden','false');
+    cornerVid=elFilm.querySelector('video');
+    cornerVid.muted=true; cornerVid.playsInline=true;
+    elFilm.querySelector('.tl-cwrap').addEventListener('click',(e)=>{
+      e.stopPropagation(); showFilm(); });
+    syncCorner();
+  }
+
+  /* A clip behind display:none keeps decoding, and CSS cannot stop it. The
+     media query above removes the film on a narrow stage, so the pause has to
+     be driven from the same condition -- otherwise a phone pays for a video it
+     is never shown. Re-checked on resize because that is when it changes. */
+  const narrow=matchMedia('(max-width:700px)');
+  function syncCorner(){
+    if(!cornerVid) return;
+    if(narrow.matches){ try{ cornerVid.pause(); }catch(_){} return; }
+    if(cornerVid.paused){ const p=cornerVid.play(); if(p&&p.catch) p.catch(()=>{}); }
+  }
+  narrow.addEventListener('change', syncCorner);
 
   /* THE FILM. Rendered into the same preview card the visits use, so it gets
      the enlarge catcher, the Esc button and the positioning for free.
@@ -1401,7 +1510,7 @@ const TL=(()=>{
     if(filmVid){ try{ filmVid.pause(); }catch(_){}
       filmVid.removeAttribute('src'); try{ filmVid.load(); }catch(_){} }
     filmVid=null;
-    paintParks();
+    paintParks(); paintFilm();
   }
   function showFilm(){
     if(!pack.film) return;
@@ -1425,7 +1534,7 @@ const TL=(()=>{
     const first=elNodes.querySelector('button');
     if(first) position(first);
     elPrev.classList.add('on'); root.classList.add('prev');
-    paintParks(); frame();
+    paintParks(); paintFilm(); frame();
   }
 
   function wireFilm(wrap, v, bar, f, hint){
@@ -1543,7 +1652,7 @@ const TL=(()=>{
     endFilm();
     pack=p; built=false; active=null;
     const mine=++seq;
-    paintParks();
+    paintParks(); paintFilm();
     collapse(); elPrev.classList.remove('on','big'); root.classList.remove('prev');
     elNodes.innerHTML=''; elCount.textContent='';
     load().then(()=>{ if(mine!==seq) return; build(); openDefault(); }).catch(()=>{});
@@ -1821,11 +1930,14 @@ const TL=(()=>{
     setMarker(m){
       const isJohor = !!m && m.s.id===HUB;
       if(!isJohor){ if(on){ on=false; marker=null; root.classList.remove('on','prev');
-        root.setAttribute('aria-hidden','true'); collapse(); close(); } return; }
+        root.setAttribute('aria-hidden','true'); collapse(); close();
+        // a hidden <video> keeps decoding; this panel comes down on every
+        // zoom-out, so the corner clip has to be stopped, not just hidden
+        if(cornerVid){ try{ cornerVid.pause(); }catch(_){} } } return; }
       if(on) return;                    // already up; do not restart it mid-hover
       marker=m; on=true;
       root.classList.add('on'); root.setAttribute('aria-hidden','false');
-      paintParks();
+      paintParks(); paintFilm();
       const mine=++seq;
       load().then(()=>{ if(mine!==seq) return; if(!built) build(); openDefault(); }).catch(()=>{});
     },
