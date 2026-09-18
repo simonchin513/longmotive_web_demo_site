@@ -269,6 +269,36 @@
   .lm-project-section{position:relative;background:#071f39;color:#fff;padding:clamp(78px,8vw,118px) var(--gutter);scroll-snap-align:start;overflow:hidden}
   .lm-project-section:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 72% 44%,rgba(0,176,240,.14),transparent 38%),linear-gradient(180deg,rgba(93,155,198,.045),transparent 28%)}
   .lm-project-shell{position:relative;z-index:1;max-width:var(--container-max);margin:0 auto}
+  /* The header keeps its original two columns. Putting the film in a third one
+     squeezed the intro panel 450 -> 359 and rewrapped its copy 25px taller: the
+     main content paid for the accessory, which is the wrong way round. The film
+     is a full-width band below this header instead. */
+  /* The film sits across the whole shell between the header and the card rail,
+     so it competes with nothing for horizontal room. A band, not a hero: at
+     1200px wide the clip's own 16:9 would be 675px tall and take the screen,
+     which is the one thing this must not do. 3.5:1 gives 343px -- taller than
+     the 4.5:1 first tried, still a strip, and a centre crop of a 16:9 frame
+     keeps the DAY ONE block whichever of the two is used. */
+  .lm-work-film{position:relative;display:block;width:100%;aspect-ratio:3.5/1;
+    overflow:hidden;border-radius:5px;background:#04121f;
+    border:1px solid rgba(137,190,225,.22);
+    /* Above the rail, so the margin goes underneath. Below the cards was tried
+       and rejected: the band ended up pressed against the gradient CTA that
+       follows the section and took the attention that belongs to it. */
+    margin:0 0 clamp(26px,3.6vw,46px)}
+  .lm-work-film video{display:block;width:100%;height:100%;object-fit:cover}
+  .lm-work-film .lm-wf-grad{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(90deg,rgba(4,18,31,.72) 0,rgba(4,18,31,.12) 34%,
+      rgba(4,18,31,0) 62%,rgba(4,18,31,.55) 100%)}
+  .lm-work-film .lm-wf-cap{position:absolute;left:clamp(14px,2vw,26px);bottom:clamp(12px,1.6vw,20px);
+    display:inline-flex;align-items:center;gap:9px;
+    font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:#cfe3f2;pointer-events:none}
+  .lm-work-film .lm-wf-cap i{width:22px;height:1px;background:#53cefa;display:inline-block}
+  /* A 3.5:1 band on a phone is a 90px slot with nothing readable in it. */
+  @media (max-width:760px){
+    .lm-work-film{aspect-ratio:16/10}
+  }
   .lm-work-head{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(290px,.85fr);gap:clamp(40px,8vw,118px);align-items:end;margin-bottom:clamp(34px,5vw,62px)}
   .lm-work-copy{max-width:720px}
   .lm-work-kicker{display:flex;align-items:center;gap:10px;color:#53cefa;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
@@ -491,6 +521,21 @@
               <p class="lm-work-intro">From standby power and cooling plant to control rooms, our teams coordinate, install and commission the infrastructure that keeps data centres operating.</p>
               <button class="lm-work-portfolio" onClick="{{ goProjects }}">View all projects {{ arrowIcon }}</button>
             </div>
+          </div>
+          <!-- The KTP aerial, across the shell between the header and the card
+               rail. Still inside this section -- no new scroll-snap section, no
+               change to the page's rhythm -- but it no longer takes width from
+               the heading or the intro copy.
+               Wiring is the About gallery's: data-src picked up by _applySrcs,
+               plus autoplay/loop/muted/playsinline. That is the only autoplay
+               path on this site that is known to work; a custom ref was tried
+               and the template runtime never invoked it. -->
+          <div class="lm-work-film" data-reveal="2" aria-hidden="true">
+            <video data-src="uploads/ktp-aerial/ktp-band.mp4"
+                   poster="uploads/ktp-aerial/ktp-band-poster.jpg"
+                   autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsinline="{{ true }}" preload="auto"></video>
+            <span class="lm-wf-grad"></span>
+            <span class="lm-wf-cap"><i></i>Kempas Tech Park · KTP campus</span>
           </div>
           <div class="lm-work-showcase">
             <div class="lm-project-rail" ref="{{ railWrapRef }}" onMouseEnter="{{ railEnter }}" onMouseLeave="{{ railLeave }}" onFocus="{{ railFocus }}" onBlur="{{ railBlur }}" onPointerDown="{{ railPointerDown }}" onPointerUp="{{ railPointerUp }}" onPointerCancel="{{ railPointerUp }}" onScroll="{{ railScroll }}" role="region" aria-label="Selected projects, completed installations and coordinated designs">
