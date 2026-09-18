@@ -169,14 +169,30 @@ class LMPreactionViewer extends HTMLElement{
       R_MIN=span*.18;R_MAX=span*1.9;
       // signature view = the reference-photo standpoint: compressor foreground,
       // valve cluster behind-right, panels left
+      // SIGNATURE VIEW = THE VALVE CLUSTER, at the photograph's distance.
+      // It used to frame the whole room from the reference standpoint, which
+      // put the valve tree small and behind-right; the photograph everyone
+      // sees on the card is a close-up of that tree. Framed off PV1..PV5
+      // below once their boxes are known, with this as the fallback.
       VIEWS.overview.t.set(c.x-span*.25,1.05,c.z+span*.08);VIEWS.overview.r=span*.66;
       VIEWS.plan.t.copy(c);VIEWS.plan.r=span*1.3;
       // valve row view: frame the union of the five stations, slightly frontal
       const rb=new THREE.Box3();
-      ['PV1','PV2','PV3','PV4','PV5'].forEach(id=>{if(sections[id])rb.union(sections[id].box);});
+      ['PV1','PV2','PV3','PV4','PV5'].forEach(id=>{if(sections[id])rb.union(sections[id].box);});
+      // the signature framing aims at the middle stations, not the union of all
+      // five: the outer two carry long runs of distribution pipe, so the union's
+      // centre sits out in the pipework with the valves off to one side
+      const vb=new THREE.Box3();
+      ['PV2','PV3','PV4'].forEach(id=>{if(sections[id])vb.union(sections[id].box);});
       if(!rb.isEmpty()){
         VIEWS.row.t.copy(rb.getCenter(new THREE.Vector3()));
         VIEWS.row.r=Math.max(rb.getSize(new THREE.Vector3()).length()*.72,span*.6);
+      }
+      if(!vb.isEmpty()){
+        const rc=vb.getCenter(new THREE.Vector3()),rs=vb.getSize(new THREE.Vector3());
+        VIEWS.overview.t.set(rc.x,rc.y,rc.z);
+        VIEWS.overview.r=rs.length()*VALVE_R;
+        VIEWS.overview.th=VALVE_TH;VIEWS.overview.ph=VALVE_PH;
       }
       R_MAX=VIEWS.overview.r; // zoom-out stops at the signature framing — users can only go closer
       sun.target.position.copy(c);
@@ -213,6 +229,9 @@ class LMPreactionViewer extends HTMLElement{
 
     /* ---------------- camera rig: free orbit around the room ---------------- */
     const C=new THREE.Vector3(0,1.5,0);
+    // Tuned against the card photograph: distance as a multiple of the valve
+    // cluster's diagonal, then its heading and tilt.
+    const VALVE_R=0.68,VALVE_TH=2.20,VALVE_PH=1.50;
     const VIEWS={
       overview:{t:C.clone(),r:16,th:2.24,ph:1.48},
       row:{t:C.clone(),r:10,th:2.9,ph:1.18},
