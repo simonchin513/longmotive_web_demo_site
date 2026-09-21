@@ -1,4 +1,4 @@
-/* Mobile section navigation for the SPA.
+/* Mobile section navigation shared by the SPA and News & Events.
    A short section advances one screen per swipe. A tall section (forms, maps
    and card lists) keeps normal reading scroll until its top or bottom edge. */
 (() => {
@@ -6,7 +6,9 @@
   const selector = [
     'main > div > section',
     '.about-gallery-screen', '.about-philosophy-screen',
-    '.lm-projects-filter-bar', '.lm-project-pair'
+    '.lm-projects-filter-bar', '.lm-project-pair',
+    // News & Events is a standalone document that loads this script too
+    '.ne-hero-banner', '.ne-subbar', '.ne-section-header', '.ne-content-section .ne-card-pair', '.ne-footer'
   ].join(',');
   let touch = null;
 

@@ -38,11 +38,8 @@
 /our-certifications   /about     301
 /contact-us           /contact   301
 
-# No dedicated screen for these. Services is a section of the home screen and
-# the new site carries no news; sending them to a screen that does not hold
-# their content would be worse than sending them home.
+# Services remains a section of the home screen.
 /services             /          301
-/news-events          /          301
 
 # NOTE: /projects is deliberately absent from this list. It used to redirect to
 # "/" and now it is a real URL, served by the rewrite above. Putting it back

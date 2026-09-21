@@ -1,0 +1,919 @@
+/* News & Events Page Styles - Longmotive
+   Aligned with Longmotive Design System and Site Architecture */
+@import url('_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css');
+
+:root {
+  --ne-nav-height: 72px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #081423;
+  color: #e8edf3;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   ALIGNED HEADER (Identical to index.html fixed header)
+   ========================================================================== */
+.ne-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.94);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-subtle);
+  height: var(--ne-nav-height);
+  display: flex;
+  align-items: center;
+}
+
+.ne-header-inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.ne-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6.5px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ne-brand-logo {
+  height: 42px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
+
+.ne-nav {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  list-style: none;
+}
+
+.ne-nav-item {
+  display: inline-block;
+}
+
+.ne-nav-link {
+  display: inline-block;
+  cursor: pointer;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  color: var(--text-body);
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.ne-nav-link:hover {
+  color: var(--color-brand);
+}
+
+.ne-nav-link.active {
+  color: var(--color-brand);
+  border-bottom: 2px solid var(--color-accent);
+}
+
+.ne-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ne-enquire-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: var(--color-brand);
+  color: #ffffff;
+  padding: 11px 18px;
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.ne-enquire-btn:hover {
+  background: var(--lm-blue-700);
+}
+
+.ne-menubtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-brand);
+  cursor: pointer;
+}
+
+.ne-mobile-menu {
+  display: none;
+  background: #ffffff;
+  border-top: 1px solid var(--border-subtle);
+  padding: 8px var(--gutter) 16px;
+  position: absolute;
+  top: var(--ne-nav-height);
+  left: 0;
+  right: 0;
+  box-shadow: var(--shadow-md);
+}
+
+.ne-mobile-menu.open {
+  display: block;
+}
+
+.ne-mobile-nav-link {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-body);
+}
+
+.ne-mobile-nav-link.active {
+  color: var(--color-brand);
+}
+
+/* ==========================================================================
+   ALIGNED HERO BANNER (Matches index.html About/Projects/Contact banners)
+   ========================================================================== */
+.ne-hero-banner {
+  background: var(--lm-gradient-deep);
+  padding: calc(var(--ne-nav-height) + clamp(20px, 3vh, 36px)) var(--gutter) clamp(24px, 3.5vh, 44px);
+  color: #ffffff;
+}
+
+.ne-hero-container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ne-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lm-cyan-400);
+}
+
+.ne-eyebrow-line {
+  width: 28px;
+  height: 2px;
+  background: currentColor;
+  display: inline-block;
+}
+
+.ne-hero-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(32px, 5vw, 44px);
+  color: #ffffff;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.ne-hero-desc {
+  margin: 0;
+  font-size: clamp(15px, 2vw, 17px);
+  color: var(--lm-blue-100);
+  line-height: 1.6;
+  max-width: 64ch;
+}
+
+/* ==========================================================================
+   FILTER CONTROLS SUBBAR
+   ========================================================================== */
+.ne-subbar {
+  background: #0c1c30;
+  border-bottom: 1px solid #223047;
+  padding: 14px var(--gutter);
+}
+
+.ne-subbar-inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.ne-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ne-control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #d7e0ea;
+  font-weight: 500;
+}
+
+.ne-select {
+  background-color: #10243b;
+  border: 1px solid #334052;
+  border-radius: var(--radius-sm);
+  padding: 6px 28px 6px 12px;
+  font-size: 13px;
+  color: #e8edf3;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23d7e0ea' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ne-select:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: var(--ring);
+}
+
+/* ==========================================================================
+   CONTENT SECTION
+   ========================================================================== */
+.ne-content-section {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 40px var(--gutter) var(--section-y);
+}
+
+/* Match the Contact page's dark navy surface while keeping article cards light
+   and readable. */
+.ne-section-title {
+  color: #e8edf3 !important;
+}
+
+
+.ne-section-header {
+  margin-bottom: 28px;
+}
+
+.ne-section-title {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+
+
+/* ==========================================================================
+   CARDS GRID (3 Columns aligned with lm-g3)
+   ========================================================================== */
+.ne-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.ne-card-pair {
+  display: contents;
+}
+
+.ne-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-fast) ease;
+  cursor: pointer;
+}
+
+.ne-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-default);
+}
+
+.ne-card-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background-color: var(--lm-slate-900);
+}
+
+.ne-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.ne-card:hover .ne-card-img {
+  transform: scale(1.04);
+}
+
+/* Category Pill Badges */
+.ne-card-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.ne-badge-blue { background: rgba(15, 82, 160, 0.92); color: #ffffff; }
+.ne-badge-green { background: rgba(22, 163, 74, 0.92); color: #ffffff; }
+.ne-badge-orange { background: rgba(234, 88, 12, 0.92); color: #ffffff; }
+.ne-badge-teal { background: rgba(13, 148, 136, 0.92); color: #ffffff; }
+.ne-badge-pink { background: rgba(219, 39, 119, 0.92); color: #ffffff; }
+.ne-badge-purple { background: rgba(124, 58, 237, 0.92); color: #ffffff; }
+.ne-badge-cyan { background: rgba(8, 145, 178, 0.92); color: #ffffff; }
+.ne-badge-navy { background: rgba(30, 58, 138, 0.92); color: #ffffff; }
+.ne-badge-crimson { background: rgba(225, 29, 72, 0.92); color: #ffffff; }
+.ne-badge-amber { background: rgba(217, 119, 6, 0.92); color: #ffffff; }
+.ne-badge-red { background: rgba(220, 38, 38, 0.92); color: #ffffff; }
+.ne-badge-violet { background: rgba(109, 40, 217, 0.92); color: #ffffff; }
+.ne-badge-emerald { background: rgba(5, 150, 105, 0.92); color: #ffffff; }
+
+.ne-card-body {
+  padding: 18px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.ne-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.ne-card-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-brand);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.ne-card-category {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.ne-card-title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1.3;
+  margin-bottom: 8px;
+  transition: color 0.15s ease;
+}
+
+.ne-card:hover .ne-card-title {
+  color: var(--color-brand);
+}
+
+.ne-card-desc {
+  font-size: 13.5px;
+  color: var(--text-body);
+  line-height: 1.55;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+.ne-card-action {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-brand);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  text-decoration: none;
+  transition: gap 0.2s ease, color 0.15s ease;
+}
+
+.ne-card:hover .ne-card-action {
+  gap: 10px;
+  color: var(--lm-blue-800);
+}
+
+/* Empty State */
+.ne-empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border-default);
+}
+
+/* Pagination Bar */
+.ne-pagination-bar {
+  margin-top: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ne-pagination-info {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.ne-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ne-page-btn {
+  background: #ffffff;
+  border: 1px solid var(--border-default);
+  color: var(--text-strong);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ne-page-btn:hover:not(:disabled) {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+.ne-page-btn.active {
+  background-color: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #ffffff;
+}
+
+.ne-page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   ALIGNED FOOTER (Identical to index.html footer)
+   ========================================================================== */
+.ne-foot-wrapper {
+  background: var(--lm-blue-900);
+  color: var(--lm-blue-100);
+}
+
+.ne-foot {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 56px var(--gutter) 32px;
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1.4fr;
+  gap: 40px;
+}
+
+.ne-foot h4 {
+  color: #ffffff;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 14px;
+  font-family: var(--font-sans);
+}
+
+.ne-foot-links {
+  list-style: none;
+}
+
+.ne-foot-links li {
+  margin-bottom: 9px;
+}
+
+.ne-foot-links a {
+  cursor: pointer;
+  color: var(--lm-blue-200);
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.ne-foot-links a:hover {
+  color: #ffffff;
+}
+
+.ne-foot-address-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--lm-blue-200);
+}
+
+.ne-foot-address-row a {
+  color: var(--lm-blue-200);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.ne-foot-address-row a:hover {
+  color: #ffffff;
+}
+
+.ne-foot-icon {
+  color: var(--color-accent);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ne-foot-bottom-bar {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 18px var(--gutter);
+  max-width: var(--container-max);
+  margin: 0 auto;
+  font-size: 12px;
+  color: var(--lm-blue-300);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Modal */
+.ne-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(4, 12, 24, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.ne-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ne-modal-container {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  max-width: var(--ne-modal-natural-width, 640px);
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  transform: translateY(20px) scale(0.98);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.2s ease;
+  position: relative;
+}
+
+.ne-modal-overlay.active .ne-modal-container {
+  transform: translateY(0) scale(1);
+}
+
+.ne-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.15s ease;
+}
+
+.ne-modal-close:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.ne-modal-carousel {
+  position: relative;
+  overflow: hidden;
+  background: #061424;
+  touch-action: pan-y;
+}
+
+.ne-modal-header-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+.ne-carousel-btn {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 50%;
+  background: rgba(4,12,24,.68);
+  color: #fff;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ne-carousel-prev { left: 14px; }
+.ne-carousel-next { right: 14px; }
+
+.ne-carousel-count {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  z-index: 5;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(4,12,24,.72);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .08em;
+}
+
+.ne-carousel-btn[hidden],
+.ne-carousel-count[hidden] { display: none; }
+
+.ne-modal-body {
+  padding: 24px;
+}
+
+.ne-modal-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.ne-modal-meta .ne-card-badge {
+  position: static;
+  flex: 0 0 auto;
+}
+
+.ne-modal-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-bottom: 12px;
+}
+
+.ne-modal-desc {
+  color: var(--text-body);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .ne-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  html {
+    /* News has a long dynamic card list, so soft snapping must not prevent
+       access to its last card or the footer. */
+    scroll-snap-type: y proximity;
+    overflow-x: clip;
+  }
+
+  body {
+    overflow-x: clip;
+  }
+
+  .ne-hero-banner {
+    min-height: 0;
+    padding-top: 44px;
+    padding-bottom: 44px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .ne-foot {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .ne-cards-grid {
+    display: block;
+  }
+
+  /* Each mobile reading screen contains two compact event cards. */
+  .ne-content-section {
+    min-height: 0;
+    scroll-snap-align: none;
+    scroll-snap-stop: normal;
+    padding-top: 28px;
+  }
+
+  .ne-section-header {
+    min-height: 0;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .ne-card-pair {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    min-height: calc(100svh - 72px);
+    padding: 12px 0;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .ne-card {
+    display: grid;
+    grid-template-rows: 54% 46%;
+    min-height: 0;
+    height: 100%;
+    scroll-snap-align: none;
+    scroll-snap-stop: normal;
+  }
+
+  .ne-card-media {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .ne-card-body {
+    padding: 10px 12px 12px;
+  }
+
+  .ne-card-meta {
+    margin-bottom: 4px;
+    font-size: 10px;
+  }
+
+  .ne-card-category {
+    font-size: 10px;
+  }
+
+  .ne-card-title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 15px;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+
+  .ne-card-desc {
+    flex-grow: 0;
+    font-size: 11px;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    -webkit-line-clamp: 1;
+  }
+
+  .ne-card-action {
+    margin-top: auto;
+    font-size: 11px;
+  }
+  .ne-nav {
+    display: none;
+  }
+  .ne-menubtn {
+    display: inline-flex;
+  }
+  .ne-enquire-btn {
+    padding: 9px 14px;
+    font-size: 0.75rem;
+  }
+
+  .ne-modal-overlay { padding: 10px; }
+  .ne-modal-header-img { height: auto; }
+  .ne-modal-body { padding: 18px; }
+  .ne-carousel-btn { width: 38px; height: 38px; }
+}
+
+/* ==========================================================================
+   PHONE TYPE FLOOR
+   Nothing under 12px on a phone. The rest of the site holds that line in
+   mobile-scroll.css, which this standalone document does not load, so the
+   few labels that fall through it are lifted here.
+   ========================================================================== */
+@media (max-width: 760px) {
+  .ne-card-category { font-size: 12px !important; }
+  .ne-card-desc { font-size: 13px !important; }
+  .ne-card-badge { font-size: 12px !important; }
+  .ne-carousel-count { font-size: 12px !important; }
+  .ne-card-action, .ne-card-action span { font-size: 12px !important; }
+}
