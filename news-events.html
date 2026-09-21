@@ -226,6 +226,15 @@
     </div>
   </footer>
 
+  <!-- The SPA carries two floating shortcuts and whatsapp.js decides when to
+       show them. This page is a standalone document that never loads that
+       script, so both are simply always on, stacked the same way -- .lm-brochure
+       sits 68px above its sibling in whatsapp.css. -->
+  <a class="lm-whatsapp lm-brochure" href="/downloads/longmotive-company-profile-2024.pdf" target="_blank" rel="noopener noreferrer" aria-label="Open Longmotive company brochure PDF (new tab)">
+    <span class="lm-whatsapp__icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5"/></svg></span>
+    <span class="lm-whatsapp__copy"><strong>Brochure</strong><small>Company profile · PDF</small></span>
+  </a>
+
   <!-- WhatsApp Floating Widget (Identical to index.html) -->
   <a class="lm-whatsapp" href="https://wa.me/60149916828?text=Hi%20Longmotive%2C%20I%27d%20like%20to%20enquire%20about%20a%20project." target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
     <span class="lm-whatsapp__icon" aria-hidden="true">

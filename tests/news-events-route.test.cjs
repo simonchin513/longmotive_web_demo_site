@@ -32,4 +32,11 @@ assert.match(css, /max-width:\s*var\(--ne-modal-natural-width, 640px\)/);
 assert.match(news, /const galleryAssetVersion = '20260921-1'/);
 assert.match(news, /assets\/events\/gallery\/\$\{file\}\?v=\$\{galleryAssetVersion\}/);
 
+// Both floating shortcuts. The SPA hides them behind whatsapp.js; this page
+// never loads that script, so they are always on and the brochure one went
+// missing entirely when the page was first brought over.
+assert.match(news, /class="lm-whatsapp lm-brochure"[^>]*href="\/downloads\/longmotive-company-profile-2024\.pdf"/);
+assert.match(news, /class="lm-whatsapp"[^>]*href="https:\/\/wa\.me\/60149916828/);
+assert.ok(fs.existsSync(path.join(root, 'downloads', 'longmotive-company-profile-2024.pdf')), 'the brochure the button points at must ship');
+
 console.log('PASS: News & Events follows the shared URL and standalone-head pattern');
