@@ -11,10 +11,17 @@
     const footer = page?.querySelector('footer');
     const inHero = screen === 'Home' && (!hero || hero.getBoundingClientRect().bottom > 72);
     const inFooter = footer && footer.getBoundingClientRect().top < window.innerHeight;
-    const show = ['Home', 'About', 'Projects'].includes(screen)
-      && page.getAttribute('data-whatsapp-menu') !== 'true'
-      && !inHero && !inFooter;
-    links.forEach(link => { link.hidden = !show; });
+    // update() also runs before React mounts, when there is no page yet.
+    const clear = page?.getAttribute('data-whatsapp-menu') !== 'true' && !inHero && !inFooter;
+    const show = ['Home', 'About', 'Projects'].includes(screen) && clear;
+    // Contact already puts a WhatsApp call to action in the page body, so a
+    // floating one there would say the same thing twice. The brochure has no
+    // other way in anywhere on the site, and Contact is where someone is most
+    // likely to want the company profile -- so that one alone joins it.
+    const showBrochure = clear && (show || screen === 'Contact');
+    links.forEach(link => {
+      link.hidden = link.classList.contains('lm-brochure') ? !showBrochure : !show;
+    });
   }
   const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
   window.addEventListener('scroll', schedule, {passive:true});
