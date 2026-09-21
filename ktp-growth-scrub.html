@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KTP · Ground to grid — scroll scrub</title>
+<style>
+  :root{
+    --ink:#e8f1f8; --dim:#8fa8bd; --line:rgba(137,190,225,.22);
+    --bg:#04121f; --accent:#53cefa;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:auto}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif}
+
+  .intro,.outro{max-width:760px;margin:0 auto;padding:22vh 24px}
+  .intro h1{font-size:clamp(28px,5vw,52px);line-height:1.08;margin:0 0 18px;font-weight:600;letter-spacing:-.02em}
+  .intro p,.outro p{color:var(--dim);line-height:1.65;margin:0 0 12px}
+  .kicker{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;
+          text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:10px;margin-bottom:18px}
+  .kicker i{width:24px;height:1px;background:var(--accent);display:inline-block}
+
+  /* The track is the scroll distance; the stage is what stays on screen. */
+  .track{position:relative;height:460vh}
+  .stage{position:sticky;top:0;height:100vh;overflow:hidden;background:#000}
+  .stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+               /* the first frame is bare earth: let it sit a touch darker so the
+                  captions read, and lift as the building appears */
+               will-change:filter}
+  .vig{position:absolute;inset:0;pointer-events:none;
+       background:linear-gradient(180deg,rgba(4,18,31,.66) 0,rgba(4,18,31,.12) 26%,
+                  rgba(4,18,31,0) 52%,rgba(4,18,31,.78) 100%)}
+
+  .hud{position:absolute;left:clamp(18px,4vw,56px);bottom:clamp(22px,5vw,56px);
+       right:clamp(18px,4vw,56px);display:flex;align-items:flex-end;
+       justify-content:space-between;gap:24px;pointer-events:none}
+  .phase{min-width:0}
+  .phase .n{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--accent);
+            text-transform:uppercase;display:block;margin-bottom:8px}
+  .phase .t{font-size:clamp(20px,3.4vw,38px);font-weight:600;letter-spacing:-.01em;line-height:1.12;
+            transition:opacity .28s ease}
+  .phase .s{color:var(--dim);font-size:clamp(12px,1.5vw,15px);margin-top:8px}
+  .meta{font-family:var(--mono);font-size:12px;color:var(--dim);text-align:right;white-space:nowrap}
+  .meta b{color:var(--ink);font-weight:600;display:block;font-size:15px;letter-spacing:.04em}
+
+  /* progress rail */
+  .rail{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.10)}
+  .rail i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);width:0%}
+  .ticks{position:absolute;left:0;right:0;bottom:0;height:2px}
+  .ticks u{position:absolute;top:-3px;width:1px;height:8px;background:rgba(255,255,255,.35)}
+
+  .note{max-width:760px;margin:0 auto;padding:0 24px 20vh;color:#6f8699;font-size:13px;line-height:1.7}
+  .note code{font-family:var(--mono);color:#9bb6cc}
+  @media (max-width:760px){ .track{height:380vh} .hud{flex-direction:column;align-items:flex-start;gap:10px} .meta{text-align:left} }
+</style>
+</head>
+<body>
+
+<section class="intro">
+  <div class="kicker"><i></i>Kempas Tech Park</div>
+  <h1>From graded ground to a running hall.</h1>
+  <p>Seven months of one block at KTP, rebuilt from the site survey flights and
+     anchored on four real photographs. Scroll to move through it.</p>
+</section>
+
+<div class="track" id="track">
+  <div class="stage">
+    <video id="v" poster="uploads/ktp-growth/ktp-growth-poster.jpg"
+           muted playsinline preload="auto" disablepictureinpicture></video>
+    <span class="vig"></span>
+    <div class="hud">
+      <div class="phase">
+        <span class="n" id="pn">01 / 05</span>
+        <div class="t" id="pt">Graded ground</div>
+        <div class="s" id="ps">The plot levelled and set out, before the first pour</div>
+      </div>
+      <div class="meta"><b id="pd">May 2025</b><span id="pp">0%</span></div>
+    </div>
+    <div class="rail"><i id="bar"></i></div>
+    <div class="ticks" id="ticks"></div>
+  </div>
+</div>
+
+<section class="outro">
+  <div class="kicker"><i></i>What you just scrolled</div>
+  <p>Four of the frames are photographs taken on site — 9 May, 19 June and
+     23 July 2025, and 23 November 2025 — registered to a single locked plate.
+     The opening two states and every frame between the photographs are
+     reconstructed, not recorded.</p>
+</section>
+
+<div class="note">
+  Prototype. Scroll drives <code>video.currentTime</code> through a hand-written
+  rAF loop with an eased follow, matching the engine already running on the home
+  hero — no ScrollTrigger. Needs a server that answers HTTP Range requests.
+</div>
+
+<script>
+(function(){
+  var v = document.getElementById('v');
+  var track = document.getElementById('track');
+  var bar = document.getElementById('bar');
+  var pn = document.getElementById('pn'), pt = document.getElementById('pt');
+  var ps = document.getElementById('ps'), pd = document.getElementById('pd');
+  var pp = document.getElementById('pp'), ticks = document.getElementById('ticks');
+
+  // Source pick mirrors the site: a lighter cut for phones.
+  var mob = window.matchMedia('(max-width: 760px)').matches;
+  v.src = mob ? 'uploads/ktp-growth/ktp-growth-mobile.mp4'
+              : 'uploads/ktp-growth/ktp-growth-1600.mp4';
+
+  // Five segments of 120 frames in a 601-frame cut; boundaries land on the
+  // real photographs, so the captions change exactly where the record does.
+  var PHASE = [
+    [0.000, 'Graded ground',   'The plot levelled and set out, before the first pour', '—'],
+    [0.200, 'Pile caps',       'Footings dug, caps and ground beams poured',           '—'],
+    [0.400, 'Superstructure',  'Columns off the caps, beams and precast decks',        '9 May 2025'],
+    [0.600, 'Roof slab',       'The deck closed and the roof slab cast',               '19 Jun 2025'],
+    [0.800, 'Plant and skin',  'Cladding, glazing and the chiller banks',              '23 Jul 2025']
+  ];
+  PHASE.forEach(function(p){
+    var u = document.createElement('u'); u.style.left = (p[0]*100)+'%'; ticks.appendChild(u);
+  });
+
+  var target = 0, cur = null, lastTick = 0, shown = -1;
+
+  function paint(p){
+    var i = 0;
+    for (var k = 0; k < PHASE.length; k++) if (p >= PHASE[k][0]) i = k;
+    if (i !== shown){
+      shown = i;
+      pn.textContent = '0' + (i+1) + ' / 05';
+      pt.textContent = PHASE[i][1];
+      ps.textContent = PHASE[i][2];
+      pd.textContent = i >= 2 ? PHASE[i][3] : (i === 0 ? 'before 9 May 2025' : 'before 9 May 2025');
+    }
+    bar.style.width = (p*100).toFixed(2) + '%';
+    pp.textContent = Math.round(p*100) + '%';
+    // the plate lifts out of the dusk as the building arrives
+    v.style.filter = 'brightness(' + (0.86 + 0.20*p).toFixed(3) + ') saturate(' + (0.82 + 0.22*p).toFixed(3) + ')';
+  }
+
+  // Same seek step as the home hero: lerp toward the target, never queue a seek
+  // while the decoder is still resolving the last one, and skip sub-eps deltas.
+  function seekStep(){
+    if (!v.duration || !isFinite(v.duration) || v.readyState < 1) return;
+    if (v.seeking) return;
+    if (cur === null) cur = target;
+    if (Math.abs(cur - target) < 0.0004) cur = target;
+    else cur += (target - cur) * 0.18;
+    var t = Math.min(0.999, Math.max(0, cur)) * (v.duration - 0.05);
+    if (Math.abs(v.currentTime - t) > 0.008){ try { v.currentTime = t; } catch(e){} }
+  }
+
+  function tick(){
+    lastTick = performance.now();
+    seekStep();
+    requestAnimationFrame(tick);
+  }
+
+  function onScroll(){
+    var r = track.getBoundingClientRect();
+    var range = r.height - window.innerHeight;
+    target = range > 0 ? Math.min(1, Math.max(0, -r.top / range)) : 0;
+    paint(target);
+    // Where rAF is throttled (background tab, some embedded panes) the loop
+    // above never runs; drive the seek straight off the scroll instead.
+    if (performance.now() - lastTick > 200){ cur = target; seekStep(); }
+  }
+
+  addEventListener('scroll', onScroll, {passive:true});
+  addEventListener('resize', onScroll);
+  onScroll();
+  tick();          // started unconditionally: with preload=auto the metadata
+                   // event often fires before a listener could attach.
+  window.__scrub = function(){ return {target:target, cur:cur, ct:v.currentTime, dur:v.duration, rs:v.readyState}; };
+})();
+</script>
+</body>
+</html>
