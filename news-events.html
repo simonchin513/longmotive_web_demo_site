@@ -20,7 +20,7 @@
   <link rel="icon" href="/assets/favicon-standard-v1.png" sizes="32x32">
   <link rel="apple-touch-icon" href="/assets/apple-touch-standard-v1.png">
   <link rel="stylesheet" href="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css">
-  <link rel="stylesheet" href="news-events.css?v=20260921-1">
+  <link rel="stylesheet" href="news-events.css?v=20260921-2">
   <link rel="stylesheet" href="whatsapp.css">
   <script defer src="mobile-section-scroll.js?v=20260915-2"></script>
 </head>
@@ -423,7 +423,6 @@
     let galleryByAlbum = {};
     let modalGallery = [];
     let modalGalleryIndex = 0;
-    let carouselTouchX = null;
 
     function fitModalToImage() {
       const naturalWidth = modalImg.naturalWidth || 640;
@@ -631,15 +630,39 @@
     modalCloseBtn.addEventListener('click', closeModal);
     modalPrevBtn.addEventListener('click', () => moveModalImage(-1));
     modalNextBtn.addEventListener('click', () => moveModalImage(1));
-    modalCarousel.addEventListener('touchstart', event => {
-      carouselTouchX = event.touches.length === 1 ? event.touches[0].clientX : null;
-    }, { passive: true });
-    modalCarousel.addEventListener('touchend', event => {
-      if (carouselTouchX === null || !event.changedTouches.length) return;
-      const distance = event.changedTouches[0].clientX - carouselTouchX;
-      carouselTouchX = null;
-      if (Math.abs(distance) > 45) moveModalImage(distance < 0 ? 1 : -1);
-    }, { passive: true });
+    // DRAG TO CHANGE IMAGE. Pointer events so a mouse drag, a finger swipe and
+    // a pen all take the same path; the old handler was touch only, so on a
+    // desktop the arrows were the only way through a gallery. The image
+    // follows the pointer at a third of the distance -- enough to show the
+    // drag is doing something, not so much that a short drag looks like it
+    // already turned the page.
+    const DRAG_THRESHOLD = 45;
+    let dragX = null, dragMoved = 0;
+    const endDrag = (commit) => {
+      if (dragX === null) return;
+      const distance = dragMoved;
+      dragX = null; dragMoved = 0;
+      modalCarousel.classList.remove('is-dragging');
+      modalImg.style.transform = '';
+      if (commit && Math.abs(distance) > DRAG_THRESHOLD) moveModalImage(distance < 0 ? 1 : -1);
+    };
+    modalCarousel.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || modalGallery.length < 2) return;
+      if (event.target.closest('.ne-carousel-btn')) return; // the arrows keep their click
+      dragX = event.clientX; dragMoved = 0;
+      modalCarousel.classList.add('is-dragging');
+      modalCarousel.setPointerCapture(event.pointerId);
+    });
+    modalCarousel.addEventListener('pointermove', event => {
+      if (dragX === null) return;
+      dragMoved = event.clientX - dragX;
+      modalImg.style.transform = 'translateX(' + (dragMoved / 3) + 'px)';
+    });
+    modalCarousel.addEventListener('pointerup', () => endDrag(true));
+    modalCarousel.addEventListener('pointercancel', () => endDrag(false));
+    modalCarousel.addEventListener('pointerleave', () => endDrag(true));
+    // a dragged image otherwise becomes a native drag-and-drop ghost
+    modalImg.addEventListener('dragstart', event => event.preventDefault());
     eventModal.addEventListener('click', (e) => {
       if (e.target === eventModal) closeModal();
     });
