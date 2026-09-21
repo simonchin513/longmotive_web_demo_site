@@ -39,4 +39,16 @@ assert.match(news, /class="lm-whatsapp lm-brochure"[^>]*href="\/downloads\/longm
 assert.match(news, /class="lm-whatsapp"[^>]*href="https:\/\/wa\.me\/60149916828/);
 assert.ok(fs.existsSync(path.join(root, 'downloads', 'longmotive-company-profile-2024.pdf')), 'the brochure the button points at must ship');
 
+// Shared chrome the standalone page has to carry itself. theme-color paints
+// the phone browser bar; the og:image dimensions let a preview lay the card
+// out before the picture arrives. Both went missing in the port.
+assert.match(news, /<meta name="theme-color" content="#0f52a0">/);
+for (const tag of ['og:image:type', 'og:image:width', 'og:image:height', 'og:image:alt']) {
+  assert.ok(news.includes(`property="${tag}"`), `News head must carry ${tag}`);
+}
+// One file, one cache entry: the SPA and this page must ask for the shared
+// section-scroll script under the same revision.
+const scrollRev = /mobile-section-scroll\.js\?v=([\w-]+)/;
+assert.equal(news.match(scrollRev)?.[1], html.match(scrollRev)?.[1], 'both pages must request the same mobile-section-scroll.js revision');
+
 console.log('PASS: News & Events follows the shared URL and standalone-head pattern');
