@@ -26,12 +26,17 @@
   .track{position:relative;height:460vh}
   .stage{position:sticky;top:0;height:100vh;overflow:hidden;background:#000}
   .stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-               /* the first frame is bare earth: let it sit a touch darker so the
-                  captions read, and lift as the building appears */
-               will-change:filter}
+               /* The only grade on the film, and deliberately small: Kling's 720p
+                  output sits slightly flat. Nothing is darkened here -- the film
+                  already matches the source photographs (L 48-54%), and the
+                  captions earn their legibility from a text-shadow instead. */
+               filter:saturate(1.06) contrast(1.03)}
+  /* Scrim only where the HUD actually sits. The old version also darkened the
+     top 26% at .66, which carried no text at all and cost ~20 points of
+     brightness across the whole frame. */
   .vig{position:absolute;inset:0;pointer-events:none;
-       background:linear-gradient(180deg,rgba(4,18,31,.66) 0,rgba(4,18,31,.12) 26%,
-                  rgba(4,18,31,0) 52%,rgba(4,18,31,.78) 100%)}
+       background:linear-gradient(180deg,rgba(4,18,31,0) 0,rgba(4,18,31,0) 66%,
+                  rgba(4,18,31,.20) 82%,rgba(4,18,31,.48) 100%)}
 
   .hud{position:absolute;left:clamp(18px,4vw,56px);bottom:clamp(22px,5vw,56px);
        right:clamp(18px,4vw,56px);display:flex;align-items:flex-end;
@@ -44,6 +49,9 @@
   .phase .s{color:var(--dim);font-size:clamp(12px,1.5vw,15px);margin-top:8px}
   .meta{font-family:var(--mono);font-size:12px;color:var(--dim);text-align:right;white-space:nowrap}
   .meta b{color:var(--ink);font-weight:600;display:block;font-size:15px;letter-spacing:.04em}
+  /* carries the text over the picture without washing the picture out */
+  .phase .n,.phase .t,.phase .s,.meta b,.meta span{
+       text-shadow:0 1px 3px rgba(0,8,16,.95),0 2px 14px rgba(0,8,16,.8)}
 
   /* progress rail */
   .rail{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.10)}
@@ -138,8 +146,8 @@
     }
     bar.style.width = (p*100).toFixed(2) + '%';
     pp.textContent = Math.round(p*100) + '%';
-    // the plate lifts out of the dusk as the building arrives
-    v.style.filter = 'brightness(' + (0.86 + 0.20*p).toFixed(3) + ') saturate(' + (0.82 + 0.22*p).toFixed(3) + ')';
+    // No per-frame filter here on purpose: an inline style would override the
+    // stylesheet, and the grade is meant to be constant across the film.
   }
 
   // Same seek step as the home hero: lerp toward the target, never queue a seek
