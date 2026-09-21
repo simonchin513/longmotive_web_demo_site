@@ -940,3 +940,61 @@ body {
 .ne-modal-body { flex: 0 0 auto; }
 .ne-modal-header-img { height: auto; max-height: 100%; transition: transform .22s cubic-bezier(.16,1,.3,1); }
 .ne-modal-carousel.is-dragging .ne-modal-header-img { transition: none; }
+
+/* ==========================================================================
+   WAITING FOR A PICTURE
+   A gallery frame is up to 471KB, so on a slow connection there is a real
+   wait. Three things cover it: the card image fades in when it arrives
+   instead of popping, the modal keeps the photograph it is showing while
+   the next one downloads, and a bar rides the top of the frame if that
+   takes longer than a moment.
+   ========================================================================== */
+.ne-card-img { opacity: 0; transition: opacity .32s ease, transform .35s ease; }
+.ne-card-img.is-loaded { opacity: 1; }
+
+/* the empty frame reads as 'loading', not as 'broken' */
+.ne-card-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, rgba(255,255,255,.03) 30%, rgba(255,255,255,.09) 50%, rgba(255,255,255,.03) 70%);
+  background-size: 220% 100%;
+  animation: ne-shimmer 1.4s linear infinite;
+  pointer-events: none;
+}
+.ne-card-media:has(.ne-card-img.is-loaded)::after { display: none; }
+@keyframes ne-shimmer { from { background-position: 180% 0; } to { background-position: -80% 0; } }
+
+.ne-carousel-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity .18s ease;
+  z-index: 3;
+  pointer-events: none;
+}
+.ne-modal-carousel.is-loading .ne-carousel-progress { opacity: 1; }
+.ne-carousel-progress::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 38%;
+  background: linear-gradient(90deg, transparent, var(--color-accent, #00b0f0), transparent);
+  animation: ne-bar 1.05s cubic-bezier(.4,0,.2,1) infinite;
+}
+@keyframes ne-bar { from { transform: translateX(-110%); } to { transform: translateX(370%); } }
+
+/* the frame you are leaving dims while the next one loads, so the wait is
+   visible without the picture disappearing */
+.ne-modal-carousel.is-loading .ne-modal-header-img { opacity: .5; }
+.ne-modal-header-img { transition: transform .22s cubic-bezier(.16,1,.3,1), opacity .2s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ne-card-media::after, .ne-carousel-progress::before { animation: none; }
+  .ne-card-img { transition: none; }
+}

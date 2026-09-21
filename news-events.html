@@ -20,7 +20,7 @@
   <link rel="icon" href="/assets/favicon-standard-v1.png" sizes="32x32">
   <link rel="apple-touch-icon" href="/assets/apple-touch-standard-v1.png">
   <link rel="stylesheet" href="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css">
-  <link rel="stylesheet" href="news-events.css?v=20260921-4">
+  <link rel="stylesheet" href="news-events.css?v=20260921-5">
   <link rel="stylesheet" href="whatsapp.css">
   <script defer src="mobile-section-scroll.js?v=20260915-2"></script>
 </head>
@@ -145,6 +145,7 @@
         <img id="modalImg" class="ne-modal-header-img" alt="Event Highlight">
         <button class="ne-carousel-btn ne-carousel-prev" id="modalPrevBtn" type="button" aria-label="Previous image">‹</button>
         <button class="ne-carousel-btn ne-carousel-next" id="modalNextBtn" type="button" aria-label="Next image">›</button>
+        <div class="ne-carousel-progress" id="modalProgress" aria-hidden="true"></div>
         <span class="ne-carousel-count" id="modalImageCount" aria-live="polite">1 / 1</span>
       </div>
       <div class="ne-modal-body">
@@ -424,6 +425,7 @@
     let galleryByAlbum = {};
     let modalGallery = [];
     let modalGalleryIndex = 0;
+    let modalSeed = null;
 
     function fitModalToImage() {
       // THE MODAL IS SIZED BY THE PICTURE, HEIGHT INCLUDED. Width alone was
@@ -519,7 +521,7 @@
         const cardMarkup = item => `
           <article class="ne-card" data-id="${item.id}">
             <div class="ne-card-media">
-              <img class="ne-card-img" src="${item.image}" alt="${item.title}" loading="lazy">
+              <img class="ne-card-img" src="${item.image}" alt="${item.title}" loading="lazy" onload="this.classList.add('is-loaded')" onerror="this.classList.add('is-loaded')">
               <span class="ne-card-badge ${item.badgeClass}">${item.badge}</span>
             </div>
             <div class="ne-card-body">
@@ -610,15 +612,60 @@
     }
 
     function showModalImage() {
+      // HOLD THE PICTURE YOU HAVE UNTIL THE NEXT ONE IS READY. Setting src
+      // directly empties the frame while the file downloads, so paging through
+      // a gallery flashed a dark hole between photographs -- worst on the
+      // heaviest ones, which are exactly the ones you wait for. The next image
+      // is decoded off-screen first; the visible one only changes when it can
+      // be drawn. A bar appears over the frame if that takes more than a
+      // moment, and the token guards against a fast swipe landing out of order.
       const total = modalGallery.length || 1;
-      const modalImageUrl = modalGallery[modalGalleryIndex];
-      modalImg.src = modalImageUrl;
-      modalImg.alt = `${modalTitle.textContent || 'Event'} — image ${modalGalleryIndex + 1} of ${total}`;
+      const url = modalGallery[modalGalleryIndex];
+      const label = `${modalTitle.textContent || 'Event'} — image ${modalGalleryIndex + 1} of ${total}`;
       modalImageCount.textContent = `${modalGalleryIndex + 1} / ${total}`;
       const hasMultiple = total > 1;
       modalPrevBtn.hidden = !hasMultiple;
       modalNextBtn.hidden = !hasMultiple;
       modalImageCount.hidden = !hasMultiple;
+      // NOTHING TO HOLD ON THE FIRST FRAME, so stand the card's own thumbnail in
+  // rather than opening on a dark hole: at 220kbps a gallery photograph is
+  // ten seconds away, and the bar alone gives you nothing to look at.
+  if (!modalImg.getAttribute('src') && modalSeed && modalGalleryIndex === 0) {
+    modalImg.src = modalSeed;
+  }
+  const token = ++imageToken;
+      beginLoading();
+      const pending = new Image();
+      const settle = () => {
+        if (token !== imageToken) return; // a later swipe already won
+        modalImg.src = url;
+        modalImg.alt = label;
+        endLoading();
+        preloadNeighbours();
+      };
+      pending.onload = settle;
+      pending.onerror = settle; // a broken file should still stop the bar
+      pending.src = url;
+    }
+
+    let imageToken = 0, loadingTimer = null;
+    function beginLoading() {
+      clearTimeout(loadingTimer);
+      // 140ms, so a cached image never flashes a progress bar at anyone
+      loadingTimer = setTimeout(() => modalCarousel.classList.add('is-loading'), 140);
+    }
+    function endLoading() {
+      clearTimeout(loadingTimer);
+      modalCarousel.classList.remove('is-loading');
+    }
+    function preloadNeighbours() {
+      // the next swipe is usually forwards, but back is one image away too
+      if (modalGallery.length < 2) return;
+      [1, -1].forEach(step => {
+        const i = (modalGalleryIndex + step + modalGallery.length) % modalGallery.length;
+        const warm = new Image();
+        warm.src = modalGallery[i];
+      });
     }
 
     function moveModalImage(direction) {
@@ -638,6 +685,8 @@
       modalTitle.textContent = item.title;
       modalDesc.textContent = item.description;
       modalGallery = galleryByAlbum[EVENT_ALBUMS[item.id]] || [item.image];
+      modalSeed = item.image; // the card's thumbnail is already decoded; it stands in until frame 1 arrives
+      modalImg.removeAttribute('src');
       modalGalleryIndex = 0;
       showModalImage();
 
