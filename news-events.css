@@ -927,5 +927,16 @@ body {
   user-select: none;
 }
 .ne-modal-carousel.is-dragging { cursor: grabbing; }
-.ne-modal-header-img { transition: transform .22s cubic-bezier(.16,1,.3,1); }
+/* NOTHING CAN PUSH THE CAPTION OUT OF THE MODAL. The container is a column:
+   the caption keeps its natural height and the picture area is allowed to
+   shrink, so a 3:4 photograph scales down instead of scrolling. Arithmetic
+   alone could not hold this -- chasing it left 4-9px of scroll at 1440 and
+   57px at 1024x768, because padding and borders are not in the sums.
+   fitModalToImage still narrows the modal for a tall picture, which is what
+   keeps the letterboxing small; this is what makes it impossible to get
+   wrong. */
+.ne-modal-container { display: flex; flex-direction: column; }
+.ne-modal-carousel { flex: 0 1 auto; min-height: 0; }
+.ne-modal-body { flex: 0 0 auto; }
+.ne-modal-header-img { height: auto; max-height: 100%; transition: transform .22s cubic-bezier(.16,1,.3,1); }
 .ne-modal-carousel.is-dragging .ne-modal-header-img { transition: none; }

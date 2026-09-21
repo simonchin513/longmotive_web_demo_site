@@ -20,7 +20,7 @@
   <link rel="icon" href="/assets/favicon-standard-v1.png" sizes="32x32">
   <link rel="apple-touch-icon" href="/assets/apple-touch-standard-v1.png">
   <link rel="stylesheet" href="_ds/longmotive-design-system-8d1e5cc8-409c-43e1-9315-92313b8f450f/styles.css">
-  <link rel="stylesheet" href="news-events.css?v=20260921-2">
+  <link rel="stylesheet" href="news-events.css?v=20260921-4">
   <link rel="stylesheet" href="whatsapp.css">
   <script defer src="mobile-section-scroll.js?v=20260915-2"></script>
 </head>
@@ -397,6 +397,7 @@
     const modalCloseBtn = document.getElementById('modalCloseBtn');
     const modalCarousel = document.getElementById('modalCarousel');
     const modalImg = document.getElementById('modalImg');
+    const modalBody = document.querySelector('.ne-modal-body');
     const modalPrevBtn = document.getElementById('modalPrevBtn');
     const modalNextBtn = document.getElementById('modalNextBtn');
     const modalImageCount = document.getElementById('modalImageCount');
@@ -425,12 +426,36 @@
     let modalGalleryIndex = 0;
 
     function fitModalToImage() {
+      // THE MODAL IS SIZED BY THE PICTURE, HEIGHT INCLUDED. Width alone was
+      // enough while every photograph was landscape. 29 of the 170 gallery
+      // images are 3:4 portraits: at 640px wide such a picture is 853px tall,
+      // which blows past the container's 90vh and leaves the caption below a
+      // scrollbar.
+      //
+      // The picture's budget is what the caption leaves behind, not a fixed
+      // share of the viewport: a phone's modal is nearly screen-wide and its
+      // caption eats most of the height, so a fixed share still overflowed
+      // there by 50-90px.
+      //
+      // Twice, because the two measurements feed each other: narrowing the
+      // modal rewraps the caption, which changes the budget that chose the
+      // width. One pass left 8-13px of scroll on exactly the tall photographs
+      // this is here to fix; the second pass settles it.
       const naturalWidth = modalImg.naturalWidth || 640;
-      const modalWidth = Math.min(640, Math.max(320, naturalWidth));
-      modalContainer.style.setProperty('--ne-modal-natural-width', `${modalWidth}px`);
+      const naturalHeight = modalImg.naturalHeight || 0;
+      const floor = Math.min(320, window.innerWidth - 32);
+      for (let pass = 0; pass < 2; pass++) {
+        const captionHeight = modalBody ? modalBody.getBoundingClientRect().height : 220;
+        const budget = Math.max(200, window.innerHeight * 0.9 - captionHeight - 20);
+        const byHeight = naturalHeight ? budget * (naturalWidth / naturalHeight) : Infinity;
+        const modalWidth = Math.min(640, Math.max(floor, Math.min(naturalWidth, byHeight)));
+        modalContainer.style.setProperty('--ne-modal-natural-width', `${Math.round(modalWidth)}px`);
+      }
     }
 
     modalImg.addEventListener('load', fitModalToImage);
+    // a rotated phone changes the height budget, so the fit is not a one-off
+    window.addEventListener('resize', () => { if (eventModal.classList.contains('active')) fitModalToImage(); });
 
     const galleryAssetVersion = '20260919-2';
 
