@@ -43,15 +43,20 @@ const railData = html.slice(railStart, railEnd);
 assert.equal((railData.match(/title:/g) || []).length, 10, 'rail must feature ten unique projects');
 assert.equal((railData.match(/photo:/g) || []).length, 10, 'each project must have a photograph');
 assert.equal((railData.match(/poster:/g) || []).length, 10, 'each project must have a coordinated-design poster');
+// The coordinated-design side of each card is a render taken out of the BIM
+// viewer the card links to, not a retouched photograph -- that was the whole
+// point of the swap, and the '-studio-' set is what it replaced. Cards whose
+// camera had to be re-aimed carry a -v2 suffix because /assets/* is immutable
+// for a year, so a changed picture has to arrive under a changed name.
 assert.equal(
-  (railData.match(/posters\/web\/[\w.-]+-studio-v2-(?:400w|800w)\.(?:webp|jpg)/g) || []).length,
+  (railData.match(/posters\/web\/[\w.-]+-model(?:-v2)?-(?:400w|800w)\.(?:webp|jpg)/g) || []).length,
   30,
-  'every coordinated-design poster URL must use the fresh v2 cache-busting asset set',
+  'every coordinated-design poster URL must come from the BIM-render asset set',
 );
 assert.equal(
-  /posters\/web\/[\w.-]+-studio-(?!v2-)/.test(railData),
+  /posters\/web\/[\w.-]+-studio-/.test(railData),
   false,
-  'legacy unversioned coordinated-design posters must not remain in the live rail mapping',
+  'the retouched studio posters must not come back to the live rail mapping',
 );
 
 assert.match(html, /_railStart/);
