@@ -356,7 +356,7 @@
         isoDate: "2023-12-08",
         category: "International Delegation",
         description: "Cross-border technical exchange and engineering tour exploring high-density prefabricated modular systems and celebrating annual milestones in China.",
-        image: "assets/events/event-11.jpg?v=20260919-2"
+        image: "assets/events/event-11.jpg?v=20260921-1"
       },
       {
         id: 12,
@@ -459,7 +459,7 @@
     // a rotated phone changes the height budget, so the fit is not a one-off
     window.addEventListener('resize', () => { if (eventModal.classList.contains('active')) fitModalToImage(); });
 
-    const galleryAssetVersion = '20260919-2';
+    const galleryAssetVersion = '20260921-1';
 
     fetch(`assets/events/gallery/sources.json?v=${galleryAssetVersion}`)
       .then(response => response.ok ? response.json() : Promise.reject(new Error('Gallery index unavailable')))

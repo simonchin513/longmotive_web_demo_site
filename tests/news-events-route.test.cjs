@@ -24,9 +24,12 @@ assert.match(css, /\.ne-modal-header-img\s*\{[^}]*width:\s*100%[^}]*height:\s*au
 assert.doesNotMatch(css, /\.ne-modal-carousel::before/);
 assert.doesNotMatch(news, /--ne-modal-image/);
 assert.doesNotMatch(news, /class="ne-breadcrumb"/);
-assert.match(news, /const modalWidth = Math\.min\(640, Math\.max\(320, naturalWidth\)\)/);
+// a tall photograph must be sized from the height left over after the caption,
+// not from its own width alone, or the modal scrolls
+assert.match(news, /const byHeight = naturalHeight \? budget \* \(naturalWidth \/ naturalHeight\) : Infinity;/);
+assert.match(news, /const modalWidth = Math\.min\(640, Math\.max\(floor, Math\.min\(naturalWidth, byHeight\)\)\);/);
 assert.match(css, /max-width:\s*var\(--ne-modal-natural-width, 640px\)/);
-assert.match(news, /const galleryAssetVersion = '20260919-2'/);
+assert.match(news, /const galleryAssetVersion = '20260921-1'/);
 assert.match(news, /assets\/events\/gallery\/\$\{file\}\?v=\$\{galleryAssetVersion\}/);
 
 console.log('PASS: News & Events follows the shared URL and standalone-head pattern');
