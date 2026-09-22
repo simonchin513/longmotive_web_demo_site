@@ -26,6 +26,37 @@ const PROJECT_HOST = 'longmotive-web-demo-site-avm.pages.dev';
 
 const DISALLOW_ALL = 'User-agent: *\nDisallow: /\n';
 
+// WORKING FILES THAT WERE PUBLISHED BY ACCIDENT.
+//
+// Seven hero and projects comparison pages shipped with the site and answered
+// 200 on the customer's domain, under titles that were never meant to leave a
+// working folder. Deleting them from the repo was not enough: Cloudflare held
+// the extensionless routes under `Cache-Control: public, s-maxage=604800`, so
+// the edge kept serving the old bytes -- /hero-jb-compare still returned the
+// page while /hero-jb-compare?cb=1 and /hero-jb-compare.html both answered 404.
+// That is a week of a deleted page staying up. A Function runs ahead of that
+// copy (its response comes back carrying no Age at all), so this is what
+// actually retires them.
+//
+// 410 rather than a redirect: they are gone and have no successor, a 410 is the
+// fastest thing to fall out of an index, and unlike a 301 no browser keeps it
+// forever -- the mistake that left /news-events needing a cache-busting query.
+const RETIRED = new Set([
+  'hero-arc-compare', 'hero-jb-compare', 'hero-real-prototype',
+  'projects-compare', 'projects-hybrid', 'projects-map-prototype',
+  'projects-video-hero',
+]);
+
+export function isRetired(pathname) {
+  const slug = pathname
+    .replace(/^\/+/, '').replace(/\/+$/, '').replace(/\.html$/, '');
+  return RETIRED.has(slug);
+}
+
+const GONE_BODY = '<!doctype html><meta charset="utf-8"><title>Gone | Longmotive</title>'
+  + '<p style="font:16px system-ui;padding:3rem">This page is no longer published. '
+  + '<a href="https://www.longmotive-m.com/">Longmotive</a></p>';
+
 // A reader gets moved; a form post and an asset fetch do not. Redirecting a
 // POST would break /api/contact, and redirecting assets would mean a branch
 // preview quietly rendering with production's files.
@@ -53,6 +84,15 @@ export function decide({ host, method = 'GET', pathname = '/', search = '', dest
 export async function onRequest(context) {
   const { request, next } = context;
   const url = new URL(request.url);
+
+  // Retired on every host, the custom domain included -- that is the one they
+  // were actually visible on.
+  if (isRetired(url.pathname)) {
+    return new Response(GONE_BODY, {
+      status: 410,
+      headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' },
+    });
+  }
 
   const plan = decide({
     host: url.hostname,

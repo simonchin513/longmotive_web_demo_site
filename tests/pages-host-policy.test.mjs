@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const code = fs.readFileSync(new URL('../functions/_middleware.js', import.meta.url), 'utf8');
-const { decide, onRequest } = await import('data:text/javascript;base64,' + Buffer.from(code).toString('base64'));
+const { decide, onRequest, isRetired } = await import('data:text/javascript;base64,' + Buffer.from(code).toString('base64'));
 
 const PROJECT = 'longmotive-web-demo-site-avm.pages.dev';
 const PREVIEW = 'news-events.' + PROJECT;
@@ -60,5 +60,28 @@ assert.equal(moved.headers.get('location'), 'https://www.longmotive-m.com/projec
 
 const untouched = await run('www.longmotive-m.com', '/', '<!doctype html>', 'text/html');
 assert.equal(untouched.headers.get('x-robots-tag'), null, 'the real site is never marked noindex');
+
+// Working files that were published by accident. Deleting them left the
+// extensionless routes alive for a week behind Cloudflare's s-maxage, so the
+// middleware is what actually retires them -- on every host, the custom domain
+// most of all, because that is where they were visible.
+for (const slug of ['hero-arc-compare', 'hero-jb-compare', 'hero-real-prototype',
+                    'projects-compare', 'projects-hybrid', 'projects-map-prototype',
+                    'projects-video-hero']) {
+  for (const form of ['/' + slug, '/' + slug + '.html', '/' + slug + '/']) {
+    assert.equal(isRetired(form), true, form + ' must be retired');
+  }
+}
+// The globe embed is framed by the home screen and stays.
+for (const keep of ['/projects-globe-embed', '/about', '/', '/news-events', '/msb-viewer.dc']) {
+  assert.equal(isRetired(keep), false, keep + ' must keep serving');
+}
+const gone = await onRequest({
+  request: new Request('https://www.longmotive-m.com/hero-jb-compare', { headers: { 'sec-fetch-dest': 'document' } }),
+  next: async () => new Response('the old page', { headers: { 'content-type': 'text/html' } }),
+});
+assert.equal(gone.status, 410, 'a retired page answers 410 on the custom domain');
+assert.equal(gone.headers.get('cache-control'), 'no-store', 'and nothing may pin that answer');
+assert.doesNotMatch(await gone.text(), /the old page/, 'next() must never be reached for a retired path');
 
 console.log('PASS: one address serves the site, the rest point at it or stay out of the index');
