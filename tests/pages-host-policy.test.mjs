@@ -65,9 +65,12 @@ assert.equal(untouched.headers.get('x-robots-tag'), null, 'the real site is neve
 // extensionless routes alive for a week behind Cloudflare's s-maxage, so the
 // middleware is what actually retires them -- on every host, the custom domain
 // most of all, because that is where they were visible.
+// 'ktp-growth-scrub' is in this list for a different reason: it is not dead,
+// it is unpublished, and it is held down until it ships properly. When it
+// does, it leaves the middleware set and this list together.
 for (const slug of ['hero-arc-compare', 'hero-jb-compare', 'hero-real-prototype',
                     'projects-compare', 'projects-hybrid', 'projects-map-prototype',
-                    'projects-video-hero']) {
+                    'projects-video-hero', 'ktp-growth-scrub']) {
   for (const form of ['/' + slug, '/' + slug + '.html', '/' + slug + '/']) {
     assert.equal(isRetired(form), true, form + ' must be retired');
   }

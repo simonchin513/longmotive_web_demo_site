@@ -45,6 +45,15 @@ const RETIRED = new Set([
   'hero-arc-compare', 'hero-jb-compare', 'hero-real-prototype',
   'projects-compare', 'projects-hybrid', 'projects-map-prototype',
   'projects-video-hero',
+  // NOT RETIRED, NOT PUBLISHED. The KTP growth scrub reached main and answered
+  // on www before it was meant to, and removing the file from the repo left
+  // the same week-long ghost the seven above did: /ktp-growth-scrub kept
+  // answering 200 from the edge while /ktp-growth-scrub?cb=1 and the .html
+  // form both gave 404. This is what actually takes it down.
+  //
+  // TAKE THIS LINE OUT WHEN THE PAGE SHIPS. Leave it in and the page will
+  // deploy and still answer 410, with nothing in the build to explain why.
+  'ktp-growth-scrub',
 ]);
 
 export function isRetired(pathname) {
