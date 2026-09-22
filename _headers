@@ -25,3 +25,13 @@
 
 /news-events.html
   Cache-Control: no-store, max-age=0
+
+# HTTPS only, for a year, once a browser has been here.
+#
+# WITHOUT includeSubDomains, deliberately. mail, webmail, smtp, imap, pop,
+# cpanel, autodiscover and ftp all resolve under longmotive-m.com and are
+# Webteq's, not ours. Asserting HTTPS on their behalf would take the company's
+# own webmail off the air for anyone who had visited this site, and an HSTS
+# claim is cached for the full year whether or not it was true.
+/*
+  Strict-Transport-Security: max-age=31536000

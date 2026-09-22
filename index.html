@@ -476,7 +476,7 @@
 
       <section class="lm-snapsec lm-home-services" style="position:relative;height:100vh;overflow:hidden;background:var(--surface-page);scroll-snap-align:start">
         <div style="position:relative;height:100%;display:flex;flex-direction:column;justify-content:center;padding:0 var(--gutter)">
-        <sc-if value="{{ showPrinciplesVideo }}" hint-placeholder-val="{{ false }}"><video ref="{{ principlesVideoRef }}" data-src="uploads/principles-bg-6c7ebe6f.mp4" muted="{{ true }}" loop="{{ true }}" playsinline="{{ true }}" preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center bottom;opacity:.42;pointer-events:none"></video></sc-if>
+        <sc-if value="{{ showPrinciplesVideo }}" hint-placeholder-val="{{ false }}"><video ref="{{ principlesVideoRef }}" data-src="uploads/principles-bg-ac5082ca.mp4" muted="{{ true }}" loop="{{ true }}" playsinline="{{ true }}" preload="none" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center bottom;opacity:.42;pointer-events:none"></video></sc-if>
         <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.88) 0%,rgba(255,255,255,.55) 40%,rgba(255,255,255,0) 75%);pointer-events:none"></div>
         <div style="position:relative;max-width:var(--container-max);margin:0 auto;width:100%">
           <div data-reveal="0" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:clamp(6px,1.2vh,12px);max-width:60ch;margin:0 auto">
@@ -533,7 +533,7 @@
           <div class="lm-work-film" data-reveal="2" aria-hidden="true">
             <video data-src="uploads/ktp-aerial/ktp-band.mp4"
                    poster="uploads/ktp-aerial/ktp-band-poster.jpg"
-                   autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsinline="{{ true }}" preload="auto"></video>
+                   autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsinline="{{ true }}" preload="none"></video>
             <span class="lm-wf-grad"></span>
             <span class="lm-wf-cap"><i></i>Kempas Tech Park · KTP campus</span>
           </div>
@@ -637,7 +637,7 @@
           <div class="lm-g3 about-gallery-screen" style="max-width:var(--container-max);margin:0 auto;width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
             <sc-for list="{{ aboutGallery }}" as="g" hint-placeholder-count="3">
               <figure data-reveal="{{ $index }}" style="margin:0;display:flex;flex-direction:column;gap:10px">
-                <div style="border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);height:clamp(140px,26vh,265px)"><sc-if value="{{ g.vid }}" hint-placeholder-val="{{ false }}"><video ref="{{ galleryVideoRef }}" data-src="{{ g.vid }}" autoPlay="{{ true }}" loop="{{ true }}" muted="{{ true }}" playsinline="{{ true }}" preload="auto" style="width:100%;height:100%;object-fit:cover;display:block"></video></sc-if></div>
+                <div style="border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);height:clamp(140px,26vh,265px)"><sc-if value="{{ g.vid }}" hint-placeholder-val="{{ false }}"><video ref="{{ galleryVideoRef }}" data-src="{{ g.vid }}" autoPlay="{{ true }}" loop="{{ true }}" muted="{{ true }}" playsinline="{{ true }}" preload="none" style="width:100%;height:100%;object-fit:cover;display:block"></video></sc-if></div>
                 <figcaption style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)"><span style="width:18px;height:2px;background:var(--color-accent)"></span>{{ g.cap }}</figcaption>
               </figure>
             </sc-for>
@@ -2418,11 +2418,52 @@ class Component extends DCLogic {
     document.querySelectorAll('img[data-src],video[data-src]').forEach(el=>{
       const s=el.getAttribute('data-src');
       if(!s||s.indexOf('{{')!==-1) return;
-      if(el.getAttribute('src')!==s){
-        el.src=s;
-        if(el.tagName==='VIDEO'){ el.muted=true; if(el.play) el.play().catch(()=>{}); }
-      }
+      if(el.getAttribute('src')===s) return;
+      // A BACKGROUND FILM IS NOT WORTH A COLD START. Handing every video its src
+      // here fetched all of them the moment the app mounted: on a desktop visit
+      // that was the principles loop and the KTP band -- together most of the
+      // page weight -- pulled before anyone had scrolled a pixel, for pictures
+      // sitting thousands of px down. Measured at 1440, scrollY 0: 35.9MB.
+      // Images stay eager: they are small, several are above the fold, and the
+      // ones that are not already carry loading="lazy".
+      if(el.tagName==='VIDEO'){ this._armVideo(el,s); return; }
+      el.src=s;
     });
+  }
+  // Give a video its source once, when it is nearly on screen.
+  //
+  // TWO WAYS IN, ON PURPOSE. The observer is the one that should do the work.
+  // The scroll listener is a backstop, and it is here because a page that never
+  // arms is a section with a hole in it -- the failure is silent and it is on
+  // the screen the whole time. It is also the half that can be proven: an
+  // IntersectionObserver needs the rendering steps, so in a tab that is not
+  // compositing it never fires at all, and a test there can only show the video
+  // staying empty. Whichever arrives first disarms the other.
+  _armVideo=(el,src)=>{
+    if(el._lmArmed) return;
+    el._lmArmed=true;
+    let obs=null;
+    const near=()=>{ const r=el.getBoundingClientRect();
+      return r.top<window.innerHeight+300 && r.bottom>-300; };
+    const disarm=()=>{
+      window.removeEventListener('scroll',onMove,{passive:true});
+      window.removeEventListener('resize',onMove,{passive:true});
+      if(obs){ obs.disconnect(); obs=null; }
+    };
+    const start=()=>{
+      disarm();
+      if(el.getAttribute('src')===src) return;
+      el.src=src; el.muted=true;
+      const p=el.play(); if(p&&p.catch) p.catch(()=>{});
+    };
+    const onMove=()=>{ if(near()) start(); };
+    if(typeof IntersectionObserver!=='undefined'){
+      obs=new IntersectionObserver(entries=>{ if(entries.some(e=>e.isIntersecting)) start(); },{rootMargin:'300px'});
+      obs.observe(el);
+    }
+    window.addEventListener('scroll',onMove,{passive:true});
+    window.addEventListener('resize',onMove,{passive:true});
+    onMove();   // already on screen at mount is a real case, not a hypothetical
   }
   componentWillUnmount(){
     this._unlockScroll();

@@ -1,0 +1,68 @@
+// WHAT A VISITOR PAYS BEFORE THEY SCROLL.
+//
+// Every video on the home screen is handed its src by _applySrcs. That used to
+// happen on mount, so a desktop visit fetched the principles loop and the KTP
+// band -- and, on About, three gallery films -- before a pixel had been
+// scrolled, for pictures sitting thousands of px down the page. Measured on
+// production at 1440 with scrollY 0: 35.9MB, 22 of it a background at 42%
+// opacity. These assertions are what keeps that from coming back.
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const root = path.resolve(__dirname, '..');
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const headers = fs.readFileSync(path.join(root, '_headers'), 'utf8');
+
+// Videos are armed on approach, never on mount.
+assert.match(html, /if\(el\.tagName==='VIDEO'\)\{ this\._armVideo\(el,s\); return; \}/,
+  '_applySrcs must hand videos to _armVideo rather than assigning src');
+assert.match(html, /_armVideo=\(el,src\)=>\{/);
+// Two ways in: the observer, and a scroll backstop. An observer needs the
+// rendering steps, so a tab that is not compositing never fires one -- the
+// backstop is both the safety net and the half a test can actually exercise.
+assert.match(html, /obs=new IntersectionObserver\(entries=>\{ if\(entries\.some\(e=>e\.isIntersecting\)\) start\(\); \}/);
+assert.match(html, /window\.addEventListener\('scroll',onMove,\{passive:true\}\)/);
+assert.match(html, /const onMove=\(\)=>\{ if\(near\(\)\) start\(\); \};/);
+assert.match(html, /const disarm=\(\)=>\{/, 'whichever arrives first must disarm the other');
+assert.doesNotMatch(html, /el\.src=s;\s*\r?\n\s*if\(el\.tagName==='VIDEO'\)/,
+  'the old assign-everything-on-mount path must stay gone');
+
+// The hero is the only film worth a cold start; it is what the screen opens on.
+const eager = html.match(/preload="auto"/g) || [];
+assert.equal(eager.length, 1, 'only the hero video may preload eagerly');
+assert.match(html, /class="lm-hero-media"[^>]*preload="auto"/,
+  'and the one that does must be the hero');
+
+// Every video the page names has to exist, at a weight someone would accept.
+const BUDGET_MB = { 'principles-bg': 9 };
+const srcs = [...html.matchAll(/data-src="(uploads\/[\w./-]+\.mp4)"/g)].map(m => m[1]);
+assert.ok(srcs.length >= 2, 'expected the background films to be declared');
+for (const src of srcs) {
+  const file = path.join(root, src);
+  assert.ok(fs.existsSync(file), `missing video: ${src}`);
+  const mb = fs.statSync(file).size / 1048576;
+  for (const [stem, cap] of Object.entries(BUDGET_MB)) {
+    if (src.includes(stem)) {
+      assert.ok(mb <= cap, `${src} is ${mb.toFixed(1)}MB, over its ${cap}MB budget`);
+    }
+  }
+}
+
+// Working files do not ship to the customer's domain.
+for (const orphan of ['hero-arc-compare', 'hero-jb-compare', 'hero-real-prototype',
+                      'projects-compare', 'projects-hybrid', 'projects-map-prototype',
+                      'projects-video-hero']) {
+  assert.equal(fs.existsSync(path.join(root, orphan + '.html')), false,
+    `${orphan}.html is a working file and must not be published`);
+}
+// The globe embed is not one of them -- the home screen frames it.
+assert.ok(fs.existsSync(path.join(root, 'projects-globe-embed.html')));
+assert.match(html, /projects-globe-embed/);
+
+// HSTS, and deliberately not for the subdomains we do not run.
+assert.match(headers, /Strict-Transport-Security: max-age=31536000\s*$/m);
+assert.doesNotMatch(headers, /Strict-Transport-Security:[^\n]*includeSubDomains/,
+  'mail, webmail and cpanel under this domain are Webteq\'s, not ours');
+
+console.log('PASS: only the hero loads eagerly, working files stay unpublished, HSTS is scoped');
