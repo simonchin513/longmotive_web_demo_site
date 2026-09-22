@@ -103,9 +103,11 @@
 </section>
 
 <div class="note">
-  Prototype. GSAP ScrollTrigger pins the stage and scrubs
-  <code>video.currentTime</code> off scroll progress. Needs a server that
-  answers HTTP Range requests — without them, seeking never resolves.
+  Prototype. It plays itself from a standing start, touring the page the way
+  the home hero does; a wheel notch, a drag or a scroll key hands the film to
+  GSAP ScrollTrigger, which pins the stage and scrubs
+  <code>video.currentTime</code> off scroll. Needs a server that answers HTTP
+  Range requests — without them, seeking never resolves.
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.15.0/gsap.min.js"></script>
@@ -119,11 +121,20 @@
   var pn = document.getElementById('pn'), pt = document.getElementById('pt');
   var ps = document.getElementById('ps'), pd = document.getElementById('pd');
   var pp = document.getElementById('pp'), ticks = document.getElementById('ticks');
+  var de = document.documentElement;
 
   // Source pick mirrors the site: a lighter cut for phones.
   var MOB = '(max-width: 760px)';
   v.src = window.matchMedia(MOB).matches ? 'uploads/ktp-growth/ktp-growth-mobile.mp4'
                                          : 'uploads/ktp-growth/ktp-growth-1600.mp4';
+
+  // Same number the home hero tours at. The clip's rate is derived from it
+  // rather than the other way round, so the PAGE moves at a readable pace and
+  // the film keeps up.
+  var AUTO_VH_PER_SEC = 0.68;
+  // The hero hands over before the end rather than parking you at it, and so
+  // does this: the tour covers three quarters and the last quarter is yours.
+  var TOUR_END = 0.75;
 
   // Five segments of 120 frames in a 601-frame cut. The last three run between
   // photographs; the first two reach back before the record to two plates
@@ -160,11 +171,13 @@
     pp.textContent = Math.round(p*100) + '%';
   }
 
-  // The decoder, not the tween, is what falls behind. Queueing a seek while the
-  // last one is still resolving loses it, so skip those ticks, and skip deltas
-  // under a frame.
   function seek(p){
     if (!v.duration || !isFinite(v.duration) || v.readyState < 1) return;
+    // NATIVE PLAYBACK OWNS THE FRAME CLOCK during the tour, exactly as the home
+    // hero does it. Seeking a playing element fights its own decoder.
+    if (!v.paused) return;
+    // A seek queued while the last one is still resolving is dropped, and
+    // deltas under a frame are not worth one.
     if (v.seeking) return;
     var t = Math.min(0.999, Math.max(0, p)) * (v.duration - 0.05);
     if (Math.abs(v.currentTime - t) > 0.008){ try { v.currentTime = t; } catch(e){} }
@@ -172,29 +185,114 @@
 
   function start(){
     gsap.registerPlugin(ScrollTrigger);
-    var st = ScrollTrigger.create({
-      trigger: stage,
-      start: 'top top',
-      // The pin length IS the scroll distance, so there is no hand-set track
-      // height. Read through a function with invalidateOnRefresh so a rotated
-      // phone re-measures instead of keeping the desktop figure.
-      end: function(){ return '+=' + (window.matchMedia(MOB).matches ? 280 : 360) + '%'; },
-      pin: true,
-      pinSpacing: true,
-      anticipatePin: 1,
-      invalidateOnRefresh: true,
-      scrub: 0.5,
-      onUpdate: function(self){ seek(self.progress); paint(self.progress); },
-      onRefresh: function(self){ seek(self.progress); paint(self.progress); }
+
+    // SCRUB NEEDS SOMETHING TO SMOOTH. On a bare ScrollTrigger.create() the
+    // scrub number is accepted and does nothing, because what it eases is the
+    // linked animation, not self.progress -- measured: a jump to 60% arrived
+    // whole on the next tick with currentTime already there. Tweening a plain
+    // object and reading THAT is what gives the eased follow the home hero has.
+    var state = {p: 0};
+    var tw = gsap.to(state, {
+      p: 1, ease: 'none',
+      onUpdate: function(){ seek(state.p); paint(state.p); },
+      scrollTrigger: {
+        trigger: stage,
+        start: 'top top',
+        // The pin length IS the scroll distance, so there is no hand-set track
+        // height. Read through a function with invalidateOnRefresh so a rotated
+        // phone re-measures instead of keeping the desktop figure.
+        end: function(){ return '+=' + (window.matchMedia(MOB).matches ? 280 : 360) + '%'; },
+        pin: true, pinSpacing: true, anticipatePin: 1,
+        invalidateOnRefresh: true,
+        scrub: 0.5
+      }
     });
-    // Duration is unknown at setup; once it arrives, put the right frame up.
-    v.addEventListener('loadedmetadata', function(){ seek(st.progress); }, {once:true});
+    var st = tw.scrollTrigger;
+
+    // ---- the tour: plays itself until somebody takes the wheel ----------
+    var auto = false, raf = null, began = false, waitAt = null, pre = null;
+
+    function tourStyle(on){
+      // A page that will not go where it is told is the shape smooth scrolling
+      // makes: the tour computes its next position from its own last target
+      // while the page crawls behind on an animation, and the two separate.
+      if (on){
+        if (!pre) pre = {b: de.style.scrollBehavior, s: de.style.scrollSnapType};
+        if (de.style.scrollBehavior !== 'auto') de.style.scrollBehavior = 'auto';
+        if (de.style.scrollSnapType !== 'none') de.style.scrollSnapType = 'none';
+      } else if (pre){
+        de.style.scrollBehavior = pre.b; de.style.scrollSnapType = pre.s; pre = null;
+      }
+    }
+
+    function halt(){
+      if (!auto) return;
+      auto = false;
+      if (raf) { cancelAnimationFrame(raf); raf = null; }
+      try { v.pause(); } catch(e){}
+      tourStyle(false);
+      // Hand the clock back where the picture actually is, so nothing jumps.
+      if (isFinite(v.duration) && v.duration > 0){
+        state.p = v.currentTime / (v.duration - 0.05);
+        if (st) st.scroll(st.start + state.p * (st.end - st.start));
+      }
+    }
+
+    function step(){
+      if (!auto) return;
+      raf = requestAnimationFrame(step);
+      var dur = (isFinite(v.duration) && v.duration > 0) ? v.duration - 0.05 : 0;
+      if (!dur || v.readyState < 3) return;     // hold the tour, do not scroll past a clip that is not there
+      if (!began){
+        v.muted = true;
+        var secs = (TOUR_END * (st.end - st.start)) / (window.innerHeight * AUTO_VH_PER_SEC);
+        v.playbackRate = Math.max(0.25, Math.min(4, (TOUR_END * v.duration) / Math.max(1, secs)));
+        var pr = v.play(); if (pr && pr.catch) pr.catch(function(){});
+        began = true; waitAt = performance.now();
+        return;
+      }
+      if (v.paused){
+        // Playback can be refused outright rather than merely stalled -- Low
+        // Power Mode does it. Waiting on a play() that will never resolve
+        // strands the tour on frame one, so give up after a beat.
+        var pr2 = v.play(); if (pr2 && pr2.catch) pr2.catch(function(){});
+        if (performance.now() - waitAt > 1500) halt();
+        return;
+      }
+      var m = v.currentTime / dur;
+      st.scroll(st.start + m * (st.end - st.start));
+      paint(m);
+      if (m >= TOUR_END) halt();
+    }
+
+    // A wheel notch, a drag, a touch or a scroll key is somebody taking over.
+    // A scrollbar drag raises no wheel event at all, which is why pointerdown
+    // is in the list.
+    var KEYS = ['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '];
+    function onGesture(e){
+      if (e.type === 'keydown' && KEYS.indexOf(e.key) === -1) return;
+      if (e.type === 'wheel' && Math.abs(e.deltaY||0) < 12 && Math.abs(e.deltaX||0) < 12) return;
+      halt();
+    }
+    ['wheel','touchmove','keydown','pointerdown'].forEach(function(t){
+      window.addEventListener(t, onGesture, {passive:true});
+    });
+
+    // Only from a standing start, and never at somebody who asked not to be
+    // moved around.
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && (window.scrollY|0) <= 2){
+      auto = true; tourStyle(true); step();
+    }
+
+    v.addEventListener('loadedmetadata', function(){ if (!auto) seek(state.p); }, {once:true});
     paint(0);
     window.__scrub = function(){
-      return {engine:'ScrollTrigger', progress:st.progress, ct:v.currentTime,
+      return {engine:'ScrollTrigger', progress:st.progress, eased:state.p, ct:v.currentTime,
               dur:v.duration, rs:v.readyState, gsap:gsap.version,
-              start:st.start, end:st.end};
+              start:st.start, end:st.end, auto:auto, paused:v.paused, rate:v.playbackRate};
     };
+    window.__halt = halt;
   }
 
   if (window.gsap && window.ScrollTrigger){ start(); }
@@ -218,8 +316,8 @@
     addEventListener('resize', onScroll);
     onScroll(); tick();
     window.__scrub = function(){
-      return {engine:'rAF fallback', progress:target, ct:v.currentTime,
-              dur:v.duration, rs:v.readyState};
+      return {engine:'rAF fallback', progress:target, eased:cur, ct:v.currentTime,
+              dur:v.duration, rs:v.readyState, auto:false, paused:v.paused};
     };
   }
 })();
