@@ -68,8 +68,8 @@
 
 <section class="intro">
   <div class="kicker"><i></i>Kempas Tech Park</div>
-  <h1>From concrete frame to a running hall.</h1>
-  <p>Six months of one block at KTP, carried between four photographs from the
+  <h1>From graded ground to a running hall.</h1>
+  <p>Seven months of one block at KTP, carried between four photographs from the
      site survey flights. Scroll to move through it.</p>
 </section>
 
@@ -80,7 +80,7 @@
     <span class="vig"></span>
     <div class="hud">
       <div class="phase">
-        <span class="n" id="pn">01 / 03</span>
+        <span class="n" id="pn">01 / 05</span>
         <div class="t" id="pt">Graded ground</div>
         <div class="s" id="ps">The plot levelled and set out, before the first pour</div>
       </div>
@@ -96,7 +96,8 @@
   <p>The four frames it rests on are photographs taken on site — 9 May, 19 June
      and 23 July 2025, and 23 November 2025 — registered to a single locked
      plate. Outside the building the picture is those photographs at full
-     resolution; the building between them is reconstructed, not recorded.</p>
+     resolution. The building between them, and the two states before the
+     record opens, are reconstructed, not recorded.</p>
 </section>
 
 <div class="note">
@@ -119,14 +120,18 @@
   v.src = mob ? 'uploads/ktp-growth/ktp-growth-mobile.mp4'
               : 'uploads/ktp-growth/ktp-growth-1600.mp4';
 
-  // Three segments of 120 frames in a 361-frame cut. Every segment now runs
-  // between two photographs: the earthworks and foundation stages were cut
-  // because no photograph of them exists, and everything invented on open
-  // ground came back looking like a 3D model however it was prompted.
+  // Five segments of 120 frames in a 601-frame cut. The last three run between
+  // photographs; the first two reach back before the record to two plates
+  // derived from the 9 May photograph by subtraction. That matters for more
+  // than texture: an invented foundation grid was discarded by the very next
+  // segment, which restarted its columns from bare ground, while a plate cut
+  // out of a photograph is carried forward and built upon.
   var PHASE = [
-    [0.0000, 'Superstructure', 'Columns off the caps, beams and precast decks', '9 May 2025'],
-    [0.3333, 'Roof slab',      'The deck closed and the roof slab cast',        '19 Jun 2025'],
-    [0.6667, 'Plant and skin', 'Cladding, glazing and the chiller banks',       '23 Jul 2025']
+    [0.000, 'Graded ground',   'The plot levelled and set out, before the first pour', '—'],
+    [0.200, 'Pile caps',       'Footings dug, caps and ground beams poured',           '—'],
+    [0.400, 'Superstructure',  'Columns off the caps, beams and precast decks',        '9 May 2025'],
+    [0.600, 'Roof slab',       'The deck closed and the roof slab cast',               '19 Jun 2025'],
+    [0.800, 'Plant and skin',  'Cladding, glazing and the chiller banks',              '23 Jul 2025']
   ];
   PHASE.forEach(function(p){
     var u = document.createElement('u'); u.style.left = (p[0]*100)+'%'; ticks.appendChild(u);
@@ -142,10 +147,10 @@
     for (var k = 0; k < PHASE.length; k++) if (p >= PHASE[k][0] - 1e-4) i = k;
     if (i !== shown){
       shown = i;
-      pn.textContent = '0' + (i+1) + ' / 03';
+      pn.textContent = '0' + (i+1) + ' / 05';
       pt.textContent = PHASE[i][1];
       ps.textContent = PHASE[i][2];
-      pd.textContent = PHASE[i][3];
+      pd.textContent = i < 2 ? 'before 9 May 2025' : PHASE[i][3];
     }
     bar.style.width = (p*100).toFixed(2) + '%';
     pp.textContent = Math.round(p*100) + '%';
