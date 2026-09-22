@@ -80,7 +80,7 @@
     <span class="vig"></span>
     <div class="hud">
       <div class="phase">
-        <span class="n" id="pn">01 / 05</span>
+        <span class="n" id="pn">01 / 04</span>
         <div class="t" id="pt">Graded ground</div>
         <div class="s" id="ps">The plot levelled and set out, before the first pour</div>
       </div>
@@ -95,8 +95,9 @@
   <div class="kicker"><i></i>What you just scrolled</div>
   <p>Four of the frames are photographs taken on site — 9 May, 19 June and
      23 July 2025, and 23 November 2025 — registered to a single locked plate.
-     The opening two states and every frame between the photographs are
-     reconstructed, not recorded.</p>
+     Outside the building the picture is those photographs at full resolution;
+     the building itself, the opening bare-earth state and every frame between
+     the photographs are reconstructed, not recorded.</p>
 </section>
 
 <div class="note">
@@ -119,14 +120,15 @@
   v.src = mob ? 'uploads/ktp-growth/ktp-growth-mobile.mp4'
               : 'uploads/ktp-growth/ktp-growth-1600.mp4';
 
-  // Five segments of 120 frames in a 601-frame cut; boundaries land on the
-  // real photographs, so the captions change exactly where the record does.
+  // Four segments of 120 frames in a 481-frame cut; every boundary lands on a
+  // photograph, so the captions change exactly where the record does. The
+  // foundation stage is no longer a stop of its own: it had no photograph
+  // behind it, and a held invented frame reads as invented.
   var PHASE = [
     [0.000, 'Graded ground',   'The plot levelled and set out, before the first pour', '—'],
-    [0.200, 'Pile caps',       'Footings dug, caps and ground beams poured',           '—'],
-    [0.400, 'Superstructure',  'Columns off the caps, beams and precast decks',        '9 May 2025'],
-    [0.600, 'Roof slab',       'The deck closed and the roof slab cast',               '19 Jun 2025'],
-    [0.800, 'Plant and skin',  'Cladding, glazing and the chiller banks',              '23 Jul 2025']
+    [0.250, 'Superstructure',  'Caps poured, columns up, beams and precast decks',     '9 May 2025'],
+    [0.500, 'Roof slab',       'The deck closed and the roof slab cast',               '19 Jun 2025'],
+    [0.750, 'Plant and skin',  'Cladding, glazing and the chiller banks',              '23 Jul 2025']
   ];
   PHASE.forEach(function(p){
     var u = document.createElement('u'); u.style.left = (p[0]*100)+'%'; ticks.appendChild(u);
@@ -136,13 +138,16 @@
 
   function paint(p){
     var i = 0;
-    for (var k = 0; k < PHASE.length; k++) if (p >= PHASE[k][0]) i = k;
+    // 1e-4 of slack: the boundaries now sit exactly on the scroll stops the
+    // captions are read at, and -r.top/range lands a hair under (0.24999),
+    // which held every caption a whole phase behind the picture.
+    for (var k = 0; k < PHASE.length; k++) if (p >= PHASE[k][0] - 1e-4) i = k;
     if (i !== shown){
       shown = i;
-      pn.textContent = '0' + (i+1) + ' / 05';
+      pn.textContent = '0' + (i+1) + ' / 04';
       pt.textContent = PHASE[i][1];
       ps.textContent = PHASE[i][2];
-      pd.textContent = i >= 2 ? PHASE[i][3] : (i === 0 ? 'before 9 May 2025' : 'before 9 May 2025');
+      pd.textContent = i === 0 ? 'before 9 May 2025' : PHASE[i][3];
     }
     bar.style.width = (p*100).toFixed(2) + '%';
     pp.textContent = Math.round(p*100) + '%';
